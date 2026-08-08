@@ -1,42 +1,35 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, IBM_Plex_Mono } from "next/font/google";
+import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
+  weight: ["500", "600", "700"],
 });
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
 });
 
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex-mono",
+const jbMono = JetBrains_Mono({
+  variable: "--font-jbmono",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "Vansh B. Backtesting — Strategy Verification for TradingView & Python",
+  title: "Northbeam Scripts — Custom PineScript Development for Serious Traders",
   description:
-    "Independent Pine Script and Python backtesting. Submit a strategy, get a verified performance report — win rate, drawdown, profit factor — before you risk a dollar of it live.",
+    "A team of PineScript and TradingView developers building custom indicators, strategies, and automation. Submit a project, work directly with your assigned developer, track progress in one dashboard.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body
-        className={`${fraunces.variable} ${inter.variable} ${plexMono.variable} antialiased`}
-      >
+      <body className={`${spaceGrotesk.variable} ${inter.variable} ${jbMono.variable} antialiased bg-bg text-text`}>
         {children}
       </body>
     </html>
