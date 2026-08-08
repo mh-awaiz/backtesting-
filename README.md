@@ -38,6 +38,21 @@ Everything else — auth, roles, the inquiry → assignment → project → chat
 payment flow, the indicator showcase, and moderation blocking — is real and
 working, not mocked.
 
+## Leads vs. Inquiries
+
+Two intentionally different capture paths, both feeding the same admin panel:
+
+- **Leads** (`/admin/leads`) — a lightweight, no-account "just leave your
+  email" form. It appears twice on the public site: at the bottom of the
+  homepage final CTA, and on every indicator detail page (for visitors who
+  are curious about one specific indicator but aren't ready to write a full
+  brief). Statuses: `new → contacted → converted / closed`.
+- **Inquiries** (`/admin/inquiries`) — the full project brief, which requires
+  an account and becomes a `Project` record once submitted (see below).
+
+Nudge a promising lead toward the full inquiry form when you follow up —
+there's no automatic conversion between the two, it's a manual admin call.
+
 ## Roles & flow
 
 1. A visitor fills out the inquiry form (public homepage or `/client/projects/new`
@@ -70,6 +85,14 @@ working, not mocked.
   role sent from the client.
 
 ## Notes
+
+- Cleaned out a batch of unused top-level components in `src/components/`
+  (`Hero.tsx`, `Nav.tsx`, `Footer.tsx`, `TrustBar.tsx`, `Process.tsx`,
+  `Testimonials.tsx`, `Packages.tsx`, `StrategyReportCard.tsx`,
+  `ContactForm.tsx`, `ContactSection.tsx`, `Reveal.tsx`) — these were
+  leftovers from an earlier, different project that had gotten bundled into
+  this repo and weren't imported anywhere. The live site only ever used
+  `src/components/marketing/*`.
 
 - You'll see a `"middleware" file convention is deprecated, use "proxy"`
   warning during build — that's Next.js previewing a future rename, current

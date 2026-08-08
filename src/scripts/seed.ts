@@ -51,7 +51,7 @@ async function seed() {
     // USERS
     // --------------------------------------------------
 
-    const admin = await User.create({
+    await User.create({
       name: "Admin",
       email: "admin@northbeam.dev",
       passwordHash,

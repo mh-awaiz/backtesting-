@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   FiGrid, FiInbox, FiFolder, FiUsers, FiUserCheck, FiTrendingUp,
-  FiMessageSquare, FiLogOut, FiX, FiCode,
+  FiMessageSquare, FiLogOut, FiX, FiCode, FiUserPlus,
 } from "react-icons/fi";
 
 type NavItem = { href: string; label: string; icon: React.ReactNode };
@@ -13,6 +13,7 @@ type NavItem = { href: string; label: string; icon: React.ReactNode };
 const navByRole: Record<string, NavItem[]> = {
   ADMIN: [
     { href: "/admin/dashboard", label: "Dashboard", icon: <FiGrid /> },
+    { href: "/admin/leads", label: "Leads", icon: <FiUserPlus /> },
     { href: "/admin/inquiries", label: "Inquiries", icon: <FiInbox /> },
     { href: "/admin/projects", label: "Projects", icon: <FiFolder /> },
     { href: "/admin/developers", label: "Developers", icon: <FiUserCheck /> },

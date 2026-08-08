@@ -4,18 +4,20 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Project from "@/models/Project";
 import User from "@/models/User";
 import Violation from "@/models/Violation";
+import Lead from "@/models/Lead";
 import Topbar from "@/components/dashboard/Topbar";
 import StatCard from "@/components/dashboard/StatCard";
 import Link from "next/link";
 import StatusBadge from "@/components/ui/StatusBadge";
-import { FiInbox, FiFolder, FiUsers, FiUserCheck, FiAlertTriangle } from "react-icons/fi";
+import { FiInbox, FiFolder, FiUsers, FiUserCheck, FiAlertTriangle, FiUserPlus } from "react-icons/fi";
 
 export default async function AdminDashboard() {
   await connectToDatabase();
 
-  const [newInquiries, activeProjects, completedProjects, clientCount, developerCount, recentViolations, recentProjects] =
+  const [newInquiries, newLeads, activeProjects, completedProjects, clientCount, developerCount, recentViolations, recentProjects] =
     await Promise.all([
       Project.countDocuments({ status: { $in: ["new", "under_review"] } }),
+      Lead.countDocuments({ status: "new" }),
       Project.countDocuments({ status: { $nin: ["new", "completed", "rejected", "cancelled"] } }),
       Project.countDocuments({ status: "completed" }),
       User.countDocuments({ role: "CLIENT" }),
@@ -28,7 +30,8 @@ export default async function AdminDashboard() {
     <div className="pb-16">
       <Topbar title="Admin overview" />
 
-      <div className="px-5 lg:px-8 mt-4 grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="px-5 lg:px-8 mt-4 grid sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <StatCard label="New leads" value={newLeads} icon={<FiUserPlus />} accent="text-amber" />
         <StatCard label="New inquiries" value={newInquiries} icon={<FiInbox />} accent="text-amber" />
         <StatCard label="Active projects" value={activeProjects} icon={<FiFolder />} />
         <StatCard label="Completed" value={completedProjects} icon={<FiFolder />} accent="text-green" />

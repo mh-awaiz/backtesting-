@@ -1,35 +1,32 @@
 import mongoose, { Schema, models, model } from "mongoose";
 
+// A "Lead" is a lightweight, no-account-required capture — someone
+// interested but not ready to submit a full project brief. This is
+// intentionally separate from Project (which covers the full
+// inquiry -> assignment -> project lifecycle and requires an account):
+// leads are the top of the funnel, inquiries are the middle.
 export interface ILead {
   name: string;
   email: string;
-  platform: "TradingView" | "MT4" | "MT5" | "Python" | "Other";
-  package: "Basic" | "Standard" | "Standard+" | "Premium" | "Not sure yet";
-  details: string;
-  status: "new" | "contacted" | "in-progress" | "delivered";
+  message: string;
+  source: string; // where on the site the lead came from, e.g. "homepage", "indicator:trend-filter-pro"
+  status: "new" | "contacted" | "converted" | "closed";
   createdAt: Date;
 }
 
 const LeadSchema = new Schema<ILead>({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, trim: true, lowercase: true },
-  platform: {
-    type: String,
-    enum: ["TradingView", "MT4", "MT5", "Python", "Other"],
-    default: "TradingView",
-  },
-  package: {
-    type: String,
-    enum: ["Basic", "Standard", "Standard+", "Premium", "Not sure yet"],
-    default: "Not sure yet",
-  },
-  details: { type: String, required: true, trim: true },
+  message: { type: String, required: true, trim: true },
+  source: { type: String, default: "homepage", trim: true },
   status: {
     type: String,
-    enum: ["new", "contacted", "in-progress", "delivered"],
+    enum: ["new", "contacted", "converted", "closed"],
     default: "new",
   },
   createdAt: { type: Date, default: Date.now },
 });
+
+LeadSchema.index({ status: 1, createdAt: -1 });
 
 export default (models.Lead as mongoose.Model<ILead>) || model<ILead>("Lead", LeadSchema);
