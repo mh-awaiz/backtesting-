@@ -31,7 +31,7 @@ export default function Nav() {
       <nav className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-display text-lg text-text">
           <FiCode className="text-violet-bright" />
-          Northbeam
+          Pinex
         </Link>
 
         <div className="hidden md:flex items-center gap-8">

@@ -42,7 +42,7 @@ export default async function Home() {
       <WhyUs />
       <Testimonials />
       <FAQ />
-      <FinalCTA />
+      {/* <FinalCTA /> */}
       <ContactSection />
       <Footer />
     </main>

@@ -9,8 +9,8 @@ import { FiArrowRight, FiTrendingUp } from "react-icons/fi";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Indicators — Northbeam",
-  description: "Custom PineScript indicators built by the Northbeam team.",
+  title: "Indicators — Pinex",
+  description: "Custom PineScript indicators built by the Pinex team.",
 };
 
 function MiniChart({ seed }: { seed: number }) {

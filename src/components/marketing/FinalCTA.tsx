@@ -12,7 +12,7 @@ export default function FinalCTA() {
             </h2>
 
             <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-text-dim sm:text-base">
-              Tell us what you're trying to build. Most inquiries get reviewed
+              Tell us what you&apos;re trying to build. Most inquiries get reviewed
               within a day.
             </p>
 

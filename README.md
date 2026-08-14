@@ -1,4 +1,4 @@
-# Northbeam — PineScript Development Agency Platform
+# Pinex — PineScript Development Agency Platform
 
 A Next.js + MongoDB platform for a PineScript/TradingView development team:
 a premium public site for ads/lead-gen, and a private client/developer/admin
@@ -15,9 +15,9 @@ system for running projects.
 4. `npm run dev` — http://localhost:3000
 
 **Seeded logins** (all password `password123`):
-- `admin@northbeam.dev` — admin panel
-- `dev@northbeam.dev` — developer workspace (has one project pre-assigned)
-- `client@northbeam.dev` — client dashboard (has one project in progress, one pending)
+- `admin@pinex.dev` — admin panel
+- `dev@pinex.dev` — developer workspace (has one project pre-assigned)
+- `client@pinex.dev` — client dashboard (has one project in progress, one pending)
 
 ## What's real vs. what's stubbed
 

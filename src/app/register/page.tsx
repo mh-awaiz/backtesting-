@@ -71,7 +71,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm">
         <Link href="/" className="flex items-center justify-center gap-2 font-display text-xl text-text mb-8">
           <FiCode className="text-violet-bright" />
-          Northbeam
+          Pinex
         </Link>
 
         <div className="bg-bg-2 border border-border rounded-xl p-7">

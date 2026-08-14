@@ -21,7 +21,7 @@ const jbMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Northbeam Scripts — Custom PineScript Development for Serious Traders",
+  title: "Pinex Scripts — Custom PineScript Development for Serious Traders",
   description:
     "A team of PineScript and TradingView developers building custom indicators, strategies, and automation. Submit a project, work directly with your assigned developer, track progress in one dashboard.",
 };

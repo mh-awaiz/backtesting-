@@ -55,7 +55,7 @@ export default function LeadCaptureForm({
     return (
       <div className="w-full max-w-md mx-auto flex items-center justify-center gap-2 rounded-lg border border-border bg-bg-3 px-5 py-4 text-sm text-text text-center">
         <FiCheck className="shrink-0" />
-        <span>Thanks — we'll reach out by email shortly.</span>
+        <span>Thanks — we&apos;ll reach out by email shortly.</span>
       </div>
     );
   }

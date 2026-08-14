@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
-  FiGrid, FiInbox, FiFolder, FiUsers, FiUserCheck, FiTrendingUp,
+  FiGrid, FiFolder, FiUsers, FiUserCheck, FiTrendingUp,
   FiMessageSquare, FiLogOut, FiX, FiCode, FiUserPlus,
 } from "react-icons/fi";
 
@@ -14,7 +14,6 @@ const navByRole: Record<string, NavItem[]> = {
   ADMIN: [
     { href: "/admin/dashboard", label: "Dashboard", icon: <FiGrid /> },
     { href: "/admin/leads", label: "Leads", icon: <FiUserPlus /> },
-    { href: "/admin/inquiries", label: "Inquiries", icon: <FiInbox /> },
     { href: "/admin/projects", label: "Projects", icon: <FiFolder /> },
     { href: "/admin/developers", label: "Developers", icon: <FiUserCheck /> },
     { href: "/admin/clients", label: "Clients", icon: <FiUsers /> },
@@ -56,7 +55,7 @@ export default function Sidebar({
         <div className="flex items-center justify-between px-5 h-16 border-b border-border shrink-0">
           <Link href="/" className="flex items-center gap-2 font-display text-lg text-text">
             <FiCode className="text-violet-bright" />
-            Northbeam
+            Pinex
           </Link>
           <button onClick={onClose} className="lg:hidden text-text-dim">
             <FiX size={20} />

@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const indicator = await Indicator.findOne({ slug, published: true }).lean();
   if (!indicator) return {};
   return {
-    title: `${indicator.name} — Northbeam Indicators`,
+    title: `${indicator.name} — Pinex Indicators`,
     description: indicator.shortDescription,
   };
 }

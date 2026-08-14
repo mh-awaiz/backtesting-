@@ -25,7 +25,7 @@ export default function DashboardShell({
           </button>
           <Link href="/" className="flex items-center gap-2 font-display text-text">
             <FiCode className="text-violet-bright" />
-            Northbeam
+            Pinex
           </Link>
         </div>
         {children}

@@ -53,21 +53,21 @@ async function seed() {
 
     await User.create({
       name: "Admin",
-      email: "admin@northbeam.dev",
+      email: "admin@pinex.dev",
       passwordHash,
       role: "ADMIN",
     });
 
     const developer = await User.create({
       name: "Jordan Lee",
-      email: "dev@northbeam.dev",
+      email: "dev@pinex.dev",
       passwordHash,
       role: "DEVELOPER",
     });
 
     const client = await User.create({
       name: "Sam Client",
-      email: "client@northbeam.dev",
+      email: "client@pinex.dev",
       passwordHash,
       role: "CLIENT",
       company: "Sample Trading Co.",
@@ -238,15 +238,15 @@ async function seed() {
     console.log("");
 
     console.log(
-      "Admin:     admin@northbeam.dev / password123"
+      "Admin:     admin@pinex.dev / password123"
     );
 
     console.log(
-      "Developer: dev@northbeam.dev / password123"
+      "Developer: dev@pinex.dev / password123"
     );
 
     console.log(
-      "Client:    client@northbeam.dev / password123"
+      "Client:    client@pinex.dev / password123"
     );
 
     console.log("");
