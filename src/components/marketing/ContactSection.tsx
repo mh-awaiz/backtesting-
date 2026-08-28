@@ -1,5 +1,5 @@
 import Reveal from "./Reveal";
-import LeadCaptureForm from "./LeadCaptureForm";
+import ChatTriggerButton from "./ChatTriggerButton";
 
 export default function ContactSection() {
   return (
@@ -9,12 +9,12 @@ export default function ContactSection() {
           <div className="font-mono text-xs text-violet-bright mb-3">START A PROJECT</div>
           <h2 className="font-display text-3xl sm:text-4xl text-text">Tell us what you need built.</h2>
           <p className="mt-4 text-text-dim leading-relaxed">
-            Leave your email and a quick note — we&apos;ll follow up to scope it out.
+            Chat with our team now and we&apos;ll scope it out together.
           </p>
         </Reveal>
 
         <Reveal delay={120} className="mt-12 flex justify-center">
-          <LeadCaptureForm source="homepage-contact-section" />
+          <ChatTriggerButton />
         </Reveal>
       </div>
     </section>

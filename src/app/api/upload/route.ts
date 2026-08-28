@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
-import Project from "@/models/Project";
+import User from "@/models/User";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import mongoose from "mongoose";
@@ -9,32 +9,37 @@ import mongoose from "mongoose";
 const ALLOWED_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp", ".pdf", ".zip", ".txt", ".csv", ".pine"];
 const MAX_SIZE = 15 * 1024 * 1024; // 15MB
 
+// Uploads are attached to a client's chat thread, not a specific project —
+// matches the uniform chat model (see /api/chat/[clientId]).
 export async function POST(request: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
-  const projectId = formData.get("projectId") as string | null;
+  const clientId = formData.get("clientId") as string | null;
 
-  if (!file || !projectId) {
-    return NextResponse.json({ error: "File and projectId are required." }, { status: 400 });
+  if (!file || !clientId) {
+    return NextResponse.json({ error: "File and clientId are required." }, { status: 400 });
   }
-  if (!mongoose.Types.ObjectId.isValid(projectId)) {
-    return NextResponse.json({ error: "Invalid project." }, { status: 400 });
+  if (!mongoose.Types.ObjectId.isValid(clientId)) {
+    return NextResponse.json({ error: "Invalid client." }, { status: 400 });
   }
 
   await connectToDatabase();
-  const project = await Project.findById(projectId);
-  if (!project) return NextResponse.json({ error: "Project not found." }, { status: 404 });
 
   const { role, id: userId } = session.user;
   const authorized =
     role === "ADMIN" ||
-    (role === "CLIENT" && project.client.toString() === userId) ||
-    (role === "DEVELOPER" && project.assignedDeveloper?.toString() === userId);
+    role === "DEVELOPER" ||
+    (role === "CLIENT" && clientId === userId);
 
-  if (!authorized) return NextResponse.json({ error: "No access to this project." }, { status: 403 });
+  if (!authorized) return NextResponse.json({ error: "No access to this conversation." }, { status: 403 });
+
+  if (role !== "CLIENT") {
+    const client = await User.findOne({ _id: clientId, role: "CLIENT" });
+    if (!client) return NextResponse.json({ error: "Client not found." }, { status: 404 });
+  }
 
   const ext = path.extname(file.name).toLowerCase();
   if (!ALLOWED_EXTENSIONS.includes(ext)) {
@@ -45,12 +50,12 @@ export async function POST(request: NextRequest) {
   }
 
   const bytes = Buffer.from(await file.arrayBuffer());
-  const dir = path.join(process.cwd(), "public", "uploads", projectId);
+  const dir = path.join(process.cwd(), "public", "uploads", clientId);
   await mkdir(dir, { recursive: true });
 
   const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
   await writeFile(path.join(dir, safeName), bytes);
 
-  const url = `/uploads/${projectId}/${safeName}`;
+  const url = `/uploads/${clientId}/${safeName}`;
   return NextResponse.json({ url, fileName: file.name });
 }

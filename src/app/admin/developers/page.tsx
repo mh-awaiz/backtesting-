@@ -33,8 +33,22 @@ export default async function AdminDevelopersPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {withCounts.map((d) => (
               <div key={d._id.toString()} className="bg-bg-2 border border-border rounded-xl p-5">
-                <div className="font-display text-base text-text">{d.name}</div>
-                <div className="text-xs text-text-dim mt-0.5">{d.email}</div>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-display text-base text-text">{d.name}</div>
+                    <div className="text-xs text-text-dim mt-0.5">{d.email}</div>
+                  </div>
+                  <span
+                    className={`inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wide px-2 py-1 rounded-full border shrink-0 ${
+                      d.available
+                        ? "text-green bg-green/10 border-green/30"
+                        : "text-text-dim bg-bg-3 border-border"
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${d.available ? "bg-green" : "bg-text-dim"}`} />
+                    {d.available ? "Online" : "Offline"}
+                  </span>
+                </div>
                 <div className="flex gap-4 mt-4 text-xs text-text-dim">
                   <span>{d.activeCount} active</span>
                   <span>{d.completedCount} completed</span>

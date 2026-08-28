@@ -10,6 +10,7 @@ export interface IUser {
   active: boolean;
   violationCount: number;
   messagingRestricted: boolean;
+  available: boolean; // developer online/offline for chat + auto-assignment
   company?: string;
   bio?: string;
   createdAt: Date;
@@ -23,6 +24,7 @@ const UserSchema = new Schema<IUser>({
   active: { type: Boolean, default: true },
   violationCount: { type: Number, default: 0 },
   messagingRestricted: { type: Boolean, default: false },
+  available: { type: Boolean, default: false },
   company: { type: String, trim: true },
   bio: { type: String, trim: true },
   createdAt: { type: Date, default: Date.now },

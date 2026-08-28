@@ -4,7 +4,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Indicator from "@/models/Indicator";
 import Nav from "@/components/marketing/Nav";
 import Footer from "@/components/marketing/Footer";
-import LeadCaptureForm from "@/components/marketing/LeadCaptureForm";
+import ChatTriggerButton from "@/components/marketing/ChatTriggerButton";
+import FloatingChatWidget from "@/components/marketing/FloatingChatWidget";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { FiArrowRight, FiCheck } from "react-icons/fi";
@@ -108,11 +109,12 @@ export default async function IndicatorDetailPage({ params }: { params: Promise<
         </Link>
 
         <div className="mt-8 pt-8 border-t border-border max-w-lg">
-          <p className="text-xs text-text-dim mb-3">Just curious about this one? Leave your email and we&apos;ll follow up.</p>
-          <LeadCaptureForm source={`indicator:${indicator.slug}`} compact />
+          <p className="text-xs text-text-dim mb-3">Just curious about this one? Chat with our team now.</p>
+          <ChatTriggerButton variant="outline" label="Chat with us now" />
         </div>
       </section>
       <Footer />
+      <FloatingChatWidget />
     </main>
   );
 }

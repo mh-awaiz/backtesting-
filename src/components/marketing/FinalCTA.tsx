@@ -1,5 +1,5 @@
 import Reveal from "./Reveal";
-import LeadCaptureForm from "./LeadCaptureForm";
+import ChatTriggerButton from "./ChatTriggerButton";
 
 export default function FinalCTA() {
   return (
@@ -18,14 +18,11 @@ export default function FinalCTA() {
 
             <div className="mx-auto mt-10 max-w-lg border-t border-border pt-8">
               <p className="mb-3 text-center text-xs text-text-dim">
-                Not ready for a full brief? Just leave your email.
+                Not ready for a full brief? Chat with our team right now.
               </p>
 
               <div className="flex justify-center">
-                <LeadCaptureForm
-                  source="homepage-final-cta"
-                  compact
-                />
+                <ChatTriggerButton />
               </div>
             </div>
           </div>

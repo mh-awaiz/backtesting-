@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Indicator from "@/models/Indicator";
 import Nav from "@/components/marketing/Nav";
 import Hero from "@/components/marketing/Hero";
+import ScrollChart from "@/components/marketing/ScrollChart";
 import TrustBar from "@/components/marketing/TrustBar";
 import Services from "@/components/marketing/Services";
 import IndicatorShowcase from "@/components/marketing/IndicatorShowcase";
@@ -14,6 +15,7 @@ import FAQ from "@/components/marketing/FAQ";
 import FinalCTA from "@/components/marketing/FinalCTA";
 import Footer from "@/components/marketing/Footer";
 import ContactSection from "@/components/marketing/ContactSection";
+import FloatingChatWidget from "@/components/marketing/FloatingChatWidget";
 
 export default async function Home() {
   await connectToDatabase();
@@ -35,6 +37,7 @@ export default async function Home() {
     <main className="min-h-screen bg-bg">
       <Nav />
       <Hero />
+      <ScrollChart />
       <TrustBar />
       <Services />
       <IndicatorShowcase indicators={indicatorProps} />
@@ -45,6 +48,7 @@ export default async function Home() {
       {/* <FinalCTA /> */}
       <ContactSection />
       <Footer />
+      <FloatingChatWidget />
     </main>
   );
 }

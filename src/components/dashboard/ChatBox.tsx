@@ -1,19 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { FiSend, FiPaperclip, FiAlertTriangle, FiFile } from "react-icons/fi";
+import { FiSend, FiPaperclip, FiAlertTriangle, FiFile, FiInfo } from "react-icons/fi";
 
 interface Message {
   _id: string;
   text: string;
   fileUrl?: string;
   fileName?: string;
-  senderRole: "ADMIN" | "DEVELOPER" | "CLIENT";
-  sender: { name: string; role?: string } | string;
+  senderRole: "ADMIN" | "DEVELOPER" | "CLIENT" | "SYSTEM";
+  sender: { name: string; role?: string } | string | null;
   createdAt: string;
 }
 
-export default function ChatBox({ projectId, myRole }: { projectId: string; myRole: string }) {
+// Chat is scoped to the CLIENT, not a project — any developer or admin
+// opening this component for a given clientId is looking at the same
+// single conversation, matching the uniform chat model.
+export default function ChatBox({ clientId, myRole }: { clientId: string; myRole: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -24,7 +27,7 @@ export default function ChatBox({ projectId, myRole }: { projectId: string; myRo
 
   const loadMessages = useCallback(async () => {
     try {
-      const res = await fetch(`/api/projects/${projectId}/messages`);
+      const res = await fetch(`/api/chat/${clientId}/messages`);
       if (res.ok) {
         const data = await res.json();
         setMessages(data.messages);
@@ -32,7 +35,7 @@ export default function ChatBox({ projectId, myRole }: { projectId: string; myRo
     } catch {
       // silent — polling will retry
     }
-  }, [projectId]);
+  }, [clientId]);
 
   useEffect(() => {
     const interval = setInterval(loadMessages, 4000);
@@ -54,7 +57,7 @@ export default function ChatBox({ projectId, myRole }: { projectId: string; myRo
     setSending(true);
     setError("");
     try {
-      const res = await fetch(`/api/projects/${projectId}/messages`, {
+      const res = await fetch(`/api/chat/${clientId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: text.trim(), fileUrl, fileName }),
@@ -81,7 +84,7 @@ export default function ChatBox({ projectId, myRole }: { projectId: string; myRo
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("projectId", projectId);
+      formData.append("clientId", clientId);
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) {
@@ -104,8 +107,19 @@ export default function ChatBox({ projectId, myRole }: { projectId: string; myRo
           <div className="text-center text-text-dim text-sm py-10">No messages yet — say hello.</div>
         )}
         {messages.map((m) => {
+          if (m.senderRole === "SYSTEM") {
+            return (
+              <div key={m._id} className="flex justify-center">
+                <div className="flex items-center gap-2 max-w-[85%] rounded-lg px-3.5 py-2 text-xs text-amber bg-amber/10 border border-amber/30">
+                  <FiInfo size={13} className="shrink-0" />
+                  {m.text}
+                </div>
+              </div>
+            );
+          }
+
           const mine = m.senderRole === myRole;
-          const senderName = typeof m.sender === "object" ? m.sender.name : "";
+          const senderName = typeof m.sender === "object" && m.sender ? m.sender.name : "";
           return (
             <div key={m._id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
               <div

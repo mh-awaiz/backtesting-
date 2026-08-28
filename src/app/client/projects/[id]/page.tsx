@@ -46,9 +46,9 @@ export default async function ClientProjectDetail({ params }: { params: Promise<
 
           <div>
             <div className="font-mono text-[10px] uppercase tracking-wide text-text-dim mb-2 px-1">
-              Project chat
+              Chat with our team
             </div>
-            <ChatBox projectId={id} myRole="CLIENT" />
+            <ChatBox clientId={session!.user.id} myRole="CLIENT" />
           </div>
         </div>
 

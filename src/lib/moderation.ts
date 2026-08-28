@@ -85,6 +85,16 @@ function normalize(raw: string) {
   return emailExpanded;
 }
 
+// Developers are allowed to share Google Meet links specifically (that's the
+// one sanctioned way to hop on a call) — everything else off-platform is
+// still blocked. Strip these out before running the URL/keyword checks so a
+// message that's *only* a Meet link and ordinary text sails through.
+const ALLOWED_LINK_RE = /(https?:\/\/)?(meet\.google\.com|g\.co\/meet)\/[a-z0-9\-?=&_.]+/gi;
+
+function stripAllowedLinks(text: string): string {
+  return text.replace(ALLOWED_LINK_RE, " ");
+}
+
 const EMAIL_RE = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
 const URL_RE = /(https?:\/\/|www\.)[^\s]+/i;
 const HANDLE_RE = /(^|\s)@[a-z0-9_]{3,}/i;
@@ -96,7 +106,8 @@ function digitsOnly(s: string) {
 }
 
 export function moderateMessage(rawText: string): ModerationResult {
-  const text = normalize(rawText);
+  const normalized = normalize(rawText);
+  const text = stripAllowedLinks(normalized);
   const matches: string[] = [];
 
   const emailMatch = text.match(EMAIL_RE);

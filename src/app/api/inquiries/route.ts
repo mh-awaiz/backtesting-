@@ -1,7 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
-import Project from "@/models/Project";
+import Project, { ProjectStatus } from "@/models/Project";
+import User from "@/models/User";
+
+const ACTIVE_STATUSES: ProjectStatus[] = ["assigned", "in_progress", "testing", "client_review", "revision"];
+
+// Picks the currently-online developer with the fewest active projects.
+// Returns null if no developer is online — the project just stays
+// unassigned (status "new") until an admin steps in or someone comes online.
+async function pickAvailableDeveloper() {
+  const availableDevs = await User.find({ role: "DEVELOPER", active: true, available: true }).lean();
+  if (availableDevs.length === 0) return null;
+
+  const withLoad = await Promise.all(
+    availableDevs.map(async (dev) => ({
+      dev,
+      load: await Project.countDocuments({ assignedDeveloper: dev._id, status: { $in: ACTIVE_STATUSES } }),
+    }))
+  );
+
+  withLoad.sort((a, b) => a.load - b.load);
+  return withLoad[0].dev;
+}
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -19,6 +40,8 @@ export async function POST(request: NextRequest) {
 
     await connectToDatabase();
 
+    const developer = await pickAvailableDeveloper();
+
     const project = await Project.create({
       title,
       description,
@@ -28,7 +51,8 @@ export async function POST(request: NextRequest) {
       timeline,
       additionalNotes,
       client: session.user.id,
-      status: "new",
+      status: developer ? "assigned" : "new",
+      assignedDeveloper: developer?._id,
     });
 
     return NextResponse.json({ success: true, id: project._id }, { status: 201 });

@@ -21,7 +21,7 @@ export default async function DeveloperProjectDetail({ params }: { params: Promi
 
   if (!project) notFound();
 
-  const client = project.client as unknown as { name: string; email: string; company?: string };
+  const client = project.client as unknown as { _id: string; name: string; email: string; company?: string };
 
   return (
     <div className="pb-16">
@@ -42,14 +42,14 @@ export default async function DeveloperProjectDetail({ params }: { params: Promi
           <div className="flex items-start gap-2 bg-amber/10 border border-amber/30 rounded-xl p-4 text-xs text-amber">
             <FiAlertTriangle className="shrink-0 mt-0.5" />
             Messages are automatically scanned for phone numbers, emails, and social/messaging handles.
-            Keep all client communication inside this chat.
+            Google Meet links are allowed for calls — everything else off-platform stays inside this chat.
           </div>
 
           <div>
             <div className="font-mono text-[10px] uppercase tracking-wide text-text-dim mb-2 px-1">
-              Project chat
+              Chat with {client.name}
             </div>
-            <ChatBox projectId={id} myRole="DEVELOPER" />
+            <ChatBox clientId={client._id} myRole="DEVELOPER" />
           </div>
         </div>
 

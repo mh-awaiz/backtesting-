@@ -12,7 +12,7 @@ export default async function AdminMessagesPage() {
   const violations = await Violation.find()
     .sort({ createdAt: -1 })
     .populate("user", "name email")
-    .populate("project", "title")
+    .populate("client", "name")
     .lean();
 
   return (
@@ -21,7 +21,8 @@ export default async function AdminMessagesPage() {
       <div className="px-5 lg:px-8 mt-4">
         <p className="text-sm text-text-dim mb-5 max-w-2xl">
           Every blocked developer message is logged here — the original text, the reason it was flagged,
-          and which project it happened on. Nothing blocked ever reaches the client.
+          and which client&apos;s conversation it happened in. Nothing blocked ever reaches the client.
+          Google Meet links are allowed through and won&apos;t show up here.
         </p>
 
         {violations.length === 0 ? (
@@ -30,7 +31,7 @@ export default async function AdminMessagesPage() {
           <div className="bg-bg-2 border border-border rounded-xl divide-y divide-border">
             {violations.map((v) => {
               const user = v.user as unknown as { name: string; email: string };
-              const project = v.project as unknown as { _id: string; title: string };
+              const client = v.client as unknown as { _id: string; name: string };
               return (
                 <div key={v._id.toString()} className="px-5 py-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
@@ -46,12 +47,12 @@ export default async function AdminMessagesPage() {
                     Reason: <span className="text-amber">{v.reason}</span>
                   </div>
                   <div className="text-xs text-text-dim mt-1 italic">&ldquo;{v.originalText}&rdquo;</div>
-                  {project && (
+                  {client && (
                     <Link
-                      href={`/admin/projects/${project._id}`}
+                      href={`/admin/chat/${client._id}`}
                       className="text-xs text-violet-bright hover:underline mt-2 inline-block"
                     >
-                      View project: {project.title}
+                      View chat with: {client.name}
                     </Link>
                   )}
                 </div>

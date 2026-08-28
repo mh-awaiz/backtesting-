@@ -1,15 +1,15 @@
 import mongoose, { Schema, models, model, Types } from "mongoose";
 
 export interface IViolation {
-  project: Types.ObjectId;
-  user: Types.ObjectId;
+  client: Types.ObjectId; // which client's conversation this happened in
+  user: Types.ObjectId; // the developer who sent the flagged message
   originalText: string;
   reason: string;
   createdAt: Date;
 }
 
 const ViolationSchema = new Schema<IViolation>({
-  project: { type: Schema.Types.ObjectId, ref: "Project", required: true },
+  client: { type: Schema.Types.ObjectId, ref: "User", required: true },
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   originalText: { type: String, required: true },
   reason: { type: String, required: true },

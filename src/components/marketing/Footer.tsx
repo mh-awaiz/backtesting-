@@ -25,8 +25,18 @@ export default function Footer() {
         </a>
       </div>
 
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 mt-8 pt-6 border-t border-border font-mono text-[11px] text-text-dim">
-        © {new Date().getFullYear()} Pinex. Scripts are provided as tools, not financial advice — no trading results are guaranteed.
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 mt-8 pt-6 border-t border-border font-mono text-[11px] text-text-dim flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <span>
+          © {new Date().getFullYear()} Pinex. Scripts are provided as tools, not financial advice — no trading results are guaranteed.
+        </span>
+        <a
+          href="https://webraftstudio.in"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-text transition-colors shrink-0"
+        >
+          Developed by Webraft Studio
+        </a>
       </div>
     </footer>
   );

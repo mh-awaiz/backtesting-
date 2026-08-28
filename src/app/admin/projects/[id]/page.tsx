@@ -20,7 +20,7 @@ export default async function AdminProjectDetail({ params }: { params: Promise<{
 
   if (!project) notFound();
 
-  const client = project.client as unknown as { name: string; email: string; company?: string };
+  const client = project.client as unknown as { _id: string; name: string; email: string; company?: string };
   const developer = project.assignedDeveloper as unknown as { _id: string; name: string; email: string } | undefined;
 
   return (
@@ -41,9 +41,9 @@ export default async function AdminProjectDetail({ params }: { params: Promise<{
 
           <div>
             <div className="font-mono text-[10px] uppercase tracking-wide text-text-dim mb-2 px-1">
-              Project chat
+              Chat with {client.name}
             </div>
-            <ChatBox projectId={id} myRole="ADMIN" />
+            <ChatBox clientId={client._id} myRole="ADMIN" />
           </div>
         </div>
 
