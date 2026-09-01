@@ -19,15 +19,15 @@ export default function Footer() {
           <Link href="/login" className="hover:text-text transition-colors">Log in</Link>
         </div>
 
-        <a href="mailto:hello@pinex.dev" className="flex items-center gap-2 font-mono text-sm text-text-dim hover:text-text transition-colors">
+        {/* <a href="mailto:hello@pinex.dev" className="flex items-center gap-2 font-mono text-sm text-text-dim hover:text-text transition-colors">
           <FiMail size={14} />
           hello@pinex.dev
-        </a>
+        </a> */}
       </div>
 
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 mt-8 pt-6 border-t border-border font-mono text-[11px] text-text-dim flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 mt-8 pt-6 border-t border-border font-mono text-[11px] text-text-dim flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 font-bold">
         <span>
-          © {new Date().getFullYear()} Pinex. Scripts are provided as tools, not financial advice — no trading results are guaranteed.
+          © {new Date().getFullYear()} Pinex
         </span>
         <a
           href="https://webraftstudio.in"
