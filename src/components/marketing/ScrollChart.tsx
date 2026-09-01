@@ -606,6 +606,29 @@ function easeOutCubic(t: number) {
   return 1 - Math.pow(1 - t, 3);
 }
 
+/*
+ * ---------------------------------------------------------------
+ * TRADING SIGNALS
+ *
+ * The index determines which candle the signal belongs to.
+ *
+ * BUY  -> displayed below the candle
+ * SELL -> displayed above the candle
+ *
+ * These are visual/demo signals for the landing page.
+ * ---------------------------------------------------------------
+ */
+const SIGNALS: {
+  index: number;
+  type: "BUY" | "SELL";
+}[] = [
+  { index: 7, type: "BUY" },
+  { index: 16, type: "SELL" },
+  { index: 24, type: "BUY" },
+  { index: 32, type: "SELL" },
+  { index: 38, type: "BUY" },
+];
+
 export default function ScrollChart() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
@@ -624,34 +647,6 @@ export default function ScrollChart() {
       const rect = section.getBoundingClientRect();
       const viewport = window.innerHeight;
 
-      /*
-       * ==========================================================
-       * STICKY SCROLL ANIMATION
-       *
-       * The outer section is intentionally much taller than
-       * the visible chart.
-       *
-       * The chart itself is sticky.
-       *
-       * This means:
-       *
-       * ENTER SECTION
-       *      ↓
-       * CHART STICKS
-       *      ↓
-       * USER CONTINUES SCROLLING
-       *      ↓
-       * ANIMATION 0 → 100%
-       *      ↓
-       * ANIMATION FINISHED
-       *      ↓
-       * STICKY RELEASES
-       *      ↓
-       * NEXT SECTION
-       *
-       * ==========================================================
-       */
-
       const scrollDistance = section.offsetHeight - viewport;
 
       if (scrollDistance <= 0) {
@@ -660,12 +655,9 @@ export default function ScrollChart() {
       }
 
       /*
-       * When the section enters the viewport, progress starts.
-       *
-       * rect.top is 0 when the top of our tall section reaches
-       * the top of the viewport.
+       * Full animation happens while scrolling through
+       * the entire 300vh section.
        */
-
       const travelled = -rect.top;
 
       const rawProgress = travelled / scrollDistance;
@@ -675,9 +667,8 @@ export default function ScrollChart() {
       setProgress(progressValue);
 
       /*
-       * Small parallax movement while the animation runs.
+       * Small 3D floating movement.
        */
-
       const centerOffset = progressValue - 0.5;
 
       setParallax(Math.max(-10, Math.min(10, -centerOffset * 20)));
@@ -708,30 +699,15 @@ export default function ScrollChart() {
   }, []);
 
   return (
-    /*
-     * ============================================================
-     * TALL SCROLL AREA
-     *
-     * 300vh means the user gets approximately 3 viewport
-     * heights of scroll distance to complete the animation.
-     *
-     * Increase to 350vh / 400vh for slower animation.
-     * Decrease to 250vh for faster animation.
-     * ============================================================
-     */
     <section ref={sectionRef} className="relative h-[300vh] overflow-visible">
-      {/*
-       * ==========================================================
-       * STICKY VIEWPORT
-       *
-       * This stays on screen while the user scrolls through
-       * the 300vh section.
-       * ==========================================================
-       */}
+      {/* =========================================================
+          STICKY VIEWPORT
+      ========================================================== */}
+
       <div className="sticky top-0 h-screen overflow-hidden">
-        {/* ======================================================
+        {/* =======================================================
             BACKGROUND
-        ======================================================= */}
+        ======================================================== */}
 
         <div
           className="absolute inset-0 pointer-events-none overflow-hidden"
@@ -829,15 +805,15 @@ export default function ScrollChart() {
           />
         </div>
 
-        {/* ======================================================
+        {/* =======================================================
             CONTENT
-        ======================================================= */}
+        ======================================================== */}
 
         <div className="relative z-10 h-full flex items-center">
           <div className="w-full max-w-7xl mx-auto px-5 sm:px-8">
-            {/* ==================================================
+            {/* ===================================================
                 HEADING
-            =================================================== */}
+            ==================================================== */}
 
             <div className="text-center mb-10 sm:mb-14">
               <div
@@ -871,9 +847,9 @@ export default function ScrollChart() {
               </h2>
             </div>
 
-            {/* ==================================================
+            {/* ===================================================
                 3D SCENE
-            =================================================== */}
+            ==================================================== */}
 
             <div
               className="relative"
@@ -948,6 +924,7 @@ export default function ScrollChart() {
                     translateY(${parallax}px)
                     rotateX(1deg)
                   `,
+
                   boxShadow: `
                     0 40px 100px -30px rgba(0,0,0,0.65),
                     0 0 100px -50px var(--violet),
@@ -1082,7 +1059,9 @@ export default function ScrollChart() {
                     "
                     aria-hidden="true"
                   >
-                    {/* Grid */}
+                    {/* =================================================
+                        GRID
+                    ================================================== */}
 
                     {[70, 140, 210, 280, 350].map((y) => (
                       <line
@@ -1110,9 +1089,13 @@ export default function ScrollChart() {
                       />
                     ))}
 
-                    {/* SVG definitions */}
+                    {/* =================================================
+                        SVG DEFINITIONS
+                    ================================================== */}
 
                     <defs>
+                      {/* Green candle glow */}
+
                       <filter
                         id="greenGlow"
                         x="-100%"
@@ -1128,6 +1111,8 @@ export default function ScrollChart() {
                         </feMerge>
                       </filter>
 
+                      {/* Red candle glow */}
+
                       <filter
                         id="redGlow"
                         x="-100%"
@@ -1142,6 +1127,86 @@ export default function ScrollChart() {
                           <feMergeNode in="SourceGraphic" />
                         </feMerge>
                       </filter>
+
+                      {/* BUY gradient */}
+
+                      <linearGradient
+                        id="buyGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          stopColor="var(--green)"
+                          stopOpacity="1"
+                        />
+
+                        <stop
+                          offset="100%"
+                          stopColor="var(--green)"
+                          stopOpacity="0.45"
+                        />
+                      </linearGradient>
+
+                      {/* SELL gradient */}
+
+                      <linearGradient
+                        id="sellGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          stopColor="var(--red)"
+                          stopOpacity="1"
+                        />
+
+                        <stop
+                          offset="100%"
+                          stopColor="var(--red)"
+                          stopOpacity="0.45"
+                        />
+                      </linearGradient>
+
+                      {/* Signal shadow */}
+
+                      <filter
+                        id="signalShadow"
+                        x="-100%"
+                        y="-100%"
+                        width="300%"
+                        height="300%"
+                      >
+                        <feDropShadow
+                          dx="0"
+                          dy="5"
+                          stdDeviation="5"
+                          floodOpacity="0.45"
+                        />
+                      </filter>
+
+                      {/* Signal glow */}
+
+                      <filter
+                        id="signalGlow"
+                        x="-100%"
+                        y="-100%"
+                        width="300%"
+                        height="300%"
+                      >
+                        <feGaussianBlur stdDeviation="4" result="blur" />
+
+                        <feMerge>
+                          <feMergeNode in="blur" />
+                          <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                      </filter>
+
+                      {/* Trend gradient */}
 
                       <linearGradient
                         id="trendGradient"
@@ -1208,7 +1273,7 @@ export default function ScrollChart() {
                             }}
                           />
 
-                          {/* Glow */}
+                          {/* Candle glow */}
 
                           <rect
                             x={c.x - 4}
@@ -1225,7 +1290,7 @@ export default function ScrollChart() {
                             }
                           />
 
-                          {/* Body */}
+                          {/* Candle body */}
 
                           <rect
                             x={c.x - 3.5}
@@ -1238,6 +1303,216 @@ export default function ScrollChart() {
                             style={{
                               transform: `scaleY(${eased})`,
                               transformOrigin: `${c.x}px ${midY}px`,
+                            }}
+                          />
+                        </g>
+                      );
+                    })}
+
+                    {/* =================================================
+                        BUY / SELL SIGNALS
+                    ================================================== */}
+
+                    {SIGNALS.map((signal, signalIndex) => {
+                      const candle = candles[signal.index];
+
+                      if (!candle) return null;
+
+                      /*
+                       * Signal appears shortly after
+                       * its candle is revealed.
+                       */
+                      const signalThreshold = signal.index / candles.length;
+
+                      const signalProgress = clamp01(
+                        (progress - signalThreshold) * 4,
+                      );
+
+                      if (signalProgress <= 0) return null;
+
+                      const easedSignal = easeOutCubic(signalProgress);
+
+                      const isBuy = signal.type === "BUY";
+
+                      /*
+                       * BUY goes underneath candle.
+                       * SELL goes above candle.
+                       */
+                      const signalY = isBuy
+                        ? Math.min(390, candle.wickBottom + 32)
+                        : Math.max(30, candle.wickTop - 32);
+
+                      /*
+                       * Slight stagger so signals
+                       * don't feel mechanically identical.
+                       */
+                      const offset = signalIndex % 2 === 0 ? -2 : 2;
+
+                      const y = signalY + offset;
+
+                      const boxWidth = 72;
+                      const boxHeight = 30;
+
+                      const boxX = candle.x - boxWidth / 2;
+
+                      /*
+                       * 3D movement when signal appears.
+                       */
+                      const translateY = isBuy
+                        ? (1 - easedSignal) * 14
+                        : -(1 - easedSignal) * 14;
+
+                      return (
+                        <g
+                          key={`signal-${signal.type}-${signal.index}`}
+                          style={{
+                            opacity: easedSignal,
+                            transform: `
+                              translateY(${translateY}px)
+                              scale(${0.82 + easedSignal * 0.18})
+                            `,
+                            transformOrigin: `${candle.x}px ${y}px`,
+                          }}
+                        >
+                          {/* =================================================
+                              SIGNAL CONNECTOR
+                          ================================================== */}
+
+                          <line
+                            x1={candle.x}
+                            y1={isBuy ? candle.wickBottom : candle.wickTop}
+                            x2={candle.x}
+                            y2={isBuy ? y - boxHeight / 2 : y + boxHeight / 2}
+                            stroke={isBuy ? "var(--green)" : "var(--red)"}
+                            strokeWidth="1"
+                            strokeDasharray="3 4"
+                            opacity="0.65"
+                          />
+
+                          {/* =================================================
+                              SIGNAL GLOW
+                          ================================================== */}
+
+                          <rect
+                            x={boxX - 4}
+                            y={y - boxHeight / 2 - 4}
+                            width={boxWidth + 8}
+                            height={boxHeight + 8}
+                            rx="10"
+                            fill={isBuy ? "var(--green)" : "var(--red)"}
+                            opacity="0.12"
+                            filter="url(#signalGlow)"
+                          />
+
+                          {/* =================================================
+                              3D BACK EDGE
+                          ================================================== */}
+
+                          <rect
+                            x={boxX}
+                            y={y - boxHeight / 2 + 4}
+                            width={boxWidth}
+                            height={boxHeight}
+                            rx="7"
+                            fill="rgba(0,0,0,0.55)"
+                            opacity="0.7"
+                          />
+
+                          {/* =================================================
+                              MAIN GLASS SIGNAL
+                          ================================================== */}
+
+                          <rect
+                            x={boxX}
+                            y={y - boxHeight / 2}
+                            width={boxWidth}
+                            height={boxHeight}
+                            rx="7"
+                            fill={
+                              isBuy ? "url(#buyGradient)" : "url(#sellGradient)"
+                            }
+                            fillOpacity="0.9"
+                            stroke={isBuy ? "var(--green)" : "var(--red)"}
+                            strokeOpacity="0.7"
+                            strokeWidth="1"
+                            filter="url(#signalShadow)"
+                          />
+
+                          {/* Inner glass highlight */}
+
+                          <rect
+                            x={boxX + 1}
+                            y={y - boxHeight / 2 + 1}
+                            width={boxWidth - 2}
+                            height="10"
+                            rx="6"
+                            fill="white"
+                            opacity="0.08"
+                          />
+
+                          {/* =================================================
+                              SIGNAL ICON
+                          ================================================== */}
+
+                          {isBuy ? (
+                            <path
+                              d={`
+                                M ${candle.x - 25} ${y + 5}
+                                L ${candle.x - 19} ${y - 3}
+                                L ${candle.x - 13} ${y + 5}
+                              `}
+                              fill="none"
+                              stroke="white"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              opacity="0.9"
+                            />
+                          ) : (
+                            <path
+                              d={`
+                                M ${candle.x - 25} ${y - 5}
+                                L ${candle.x - 19} ${y + 3}
+                                L ${candle.x - 13} ${y - 5}
+                              `}
+                              fill="none"
+                              stroke="white"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              opacity="0.9"
+                            />
+                          )}
+
+                          {/* =================================================
+                              TEXT
+                          ================================================== */}
+
+                          <text
+                            x={candle.x + 7}
+                            y={y + 4}
+                            textAnchor="middle"
+                            fill="white"
+                            fontSize="11"
+                            fontWeight="700"
+                            fontFamily="monospace"
+                            letterSpacing="1.2"
+                          >
+                            {signal.type}
+                          </text>
+
+                          {/* =================================================
+                              SMALL STATUS DOT
+                          ================================================== */}
+
+                          <circle
+                            cx={boxX + boxWidth - 9}
+                            cy={y - boxHeight / 2 + 9}
+                            r="2"
+                            fill="white"
+                            opacity="0.8"
+                            style={{
+                              filter: "drop-shadow(0 0 4px white)",
                             }}
                           />
                         </g>
@@ -1263,7 +1538,9 @@ export default function ScrollChart() {
                       }}
                     />
 
-                    {/* Main trend line */}
+                    {/* =================================================
+                        MAIN TREND LINE
+                    ================================================== */}
 
                     <path
                       d={TREND_PATH}
@@ -1278,7 +1555,9 @@ export default function ScrollChart() {
                       }}
                     />
 
-                    {/* Price dot */}
+                    {/* =================================================
+                        PRICE DOT
+                    ================================================== */}
 
                     <circle
                       cx="1180"
@@ -1302,7 +1581,9 @@ export default function ScrollChart() {
                     />
                   </svg>
 
-                  {/* Price label */}
+                  {/* =================================================
+                      PRICE LABEL
+                  ================================================== */}
 
                   <div
                     className="
@@ -1326,7 +1607,9 @@ export default function ScrollChart() {
                     +24.82%
                   </div>
 
-                  {/* Time */}
+                  {/* =================================================
+                      TIME
+                  ================================================== */}
 
                   <div
                     className="
