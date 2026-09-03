@@ -529,12 +529,17 @@
 
 import { useEffect, useRef, useState } from "react";
 
+/* =========================================================
+   RANDOM GENERATOR
+========================================================= */
+
 function mulberry32(seed: number) {
   return function () {
     seed |= 0;
     seed = (seed + 0x6d2b79f5) | 0;
 
     let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
 
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
@@ -542,7 +547,12 @@ function mulberry32(seed: number) {
 }
 
 const CANDLE_COUNT = 42;
+
 const rand = mulberry32(1337);
+
+/* =========================================================
+   BUILD CANDLES
+========================================================= */
 
 function buildCandles() {
   const candles: {
@@ -555,6 +565,7 @@ function buildCandles() {
   }[] = [];
 
   const width = 1200;
+
   const spacing = width / CANDLE_COUNT;
 
   for (let i = 0; i < CANDLE_COUNT; i++) {
@@ -562,20 +573,24 @@ function buildCandles() {
 
     const wave =
       Math.sin(t * Math.PI * 1.15) * 98 -
-      Math.max(0, Math.sin((t - 0.15) * Math.PI * 1.6)) * 77;
+      Math.max(
+        0,
+        Math.sin((t - 0.15) * Math.PI * 1.6)
+      ) * 77;
 
     const base = 266 - wave;
+
     const jitter = (rand() - 0.5) * 36;
 
     const bodyHeight = 20 + rand() * 31;
 
     const top = base + jitter - bodyHeight / 2;
+
     const bottom = top + bodyHeight;
 
     const wickTop = top - (8 + rand() * 18);
-    const wickBottom = bottom + (8 + rand() * 18);
 
-    const color: "up" | "down" = rand() > 0.46 ? "up" : "down";
+    const wickBottom = bottom + (8 + rand() * 18);
 
     candles.push({
       x: 20 + i * spacing,
@@ -583,7 +598,7 @@ function buildCandles() {
       bottom,
       wickTop,
       wickBottom,
-      color,
+      color: rand() > 0.46 ? "up" : "down",
     });
   }
 
@@ -592,18 +607,16 @@ function buildCandles() {
 
 const candles = buildCandles();
 
+/* =========================================================
+   TREND LINE
+========================================================= */
+
 const TREND_PATH =
-  "M20,287 C120,245 200,168 300,154 C400,140 460,210 520,322 " +
-  "C580,420 640,448 700,378 C780,287 860,210 940,203 " +
-  "C1020,196 1100,168 1180,133";
+  "M20,287 C120,245 200,168 300,154 C400,140 460,210 520,322 C580,420 640,448 700,378 C780,287 860,210 940,203 C1020,196 1100,168 1180,133";
 
-function clamp01(n: number) {
-  return Math.min(1, Math.max(0, n));
-}
-
-function easeOutCubic(t: number) {
-  return 1 - Math.pow(1 - t, 3);
-}
+/* =========================================================
+   SIGNALS
+========================================================= */
 
 const SIGNALS: {
   index: number;
@@ -616,11 +629,32 @@ const SIGNALS: {
   { index: 38, type: "BUY" },
 ];
 
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function clamp01(value: number) {
+  return Math.min(1, Math.max(0, value));
+}
+
+function easeOutCubic(t: number) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+/* =========================================================
+   COMPONENT
+========================================================= */
+
 export default function ScrollChart() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const [progress, setProgress] = useState(0);
+
   const [parallax, setParallax] = useState(0);
+
+  /* =======================================================
+     SCROLL ANIMATION
+  ======================================================= */
 
   useEffect(() => {
     let frame: number | null = null;
@@ -629,12 +663,15 @@ export default function ScrollChart() {
       frame = null;
 
       const section = sectionRef.current;
+
       if (!section) return;
 
       const rect = section.getBoundingClientRect();
-      const viewport = window.innerHeight;
 
-      const scrollDistance = section.offsetHeight - viewport;
+      const viewportHeight = window.innerHeight;
+
+      const scrollDistance =
+        section.offsetHeight - viewportHeight;
 
       if (scrollDistance <= 0) {
         setProgress(1);
@@ -642,36 +679,62 @@ export default function ScrollChart() {
       }
 
       const travelled = -rect.top;
-      const rawProgress = travelled / scrollDistance;
 
-      const progressValue = clamp01(rawProgress);
+      const rawProgress =
+        travelled / scrollDistance;
 
-      setProgress(progressValue);
+      const nextProgress =
+        clamp01(rawProgress);
 
-      const centerOffset = progressValue - 0.5;
+      setProgress(nextProgress);
+
+      const centerOffset =
+        nextProgress - 0.5;
 
       setParallax(
-        Math.max(-10, Math.min(10, -centerOffset * 20))
+        Math.max(
+          -8,
+          Math.min(
+            8,
+            -centerOffset * 16
+          )
+        )
       );
     };
 
-    const onScroll = () => {
+    const handleScroll = () => {
       if (frame === null) {
-        frame = requestAnimationFrame(measure);
+        frame = requestAnimationFrame(
+          measure
+        );
       }
     };
 
     measure();
 
-    window.addEventListener("scroll", onScroll, {
-      passive: true,
-    });
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      {
+        passive: true,
+      }
+    );
 
-    window.addEventListener("resize", onScroll);
+    window.addEventListener(
+      "resize",
+      handleScroll
+    );
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
+
+      window.removeEventListener(
+        "resize",
+        handleScroll
+      );
 
       if (frame !== null) {
         cancelAnimationFrame(frame);
@@ -679,135 +742,155 @@ export default function ScrollChart() {
     };
   }, []);
 
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
     <section
       ref={sectionRef}
       className="
         relative
-        h-[260vh]
-        sm:h-[300vh]
+        h-[280vh]
         overflow-visible
+        sm:h-[300vh]
       "
     >
-      {/* STICKY VIEWPORT */}
+      {/* =====================================================
+          FULL SCREEN STICKY VIEW
+      ===================================================== */}
+
       <div
         className="
           sticky
           top-0
-          min-h-screen
-          h-auto
-          sm:h-screen
+          h-[100svh]
+          min-h-[560px]
+          w-full
           overflow-hidden
-          flex
-          items-center
         "
       >
-        {/* BACKGROUND */}
+        {/* ===================================================
+            BACKGROUND
+        =================================================== */}
+
         <div
           className="
+            pointer-events-none
             absolute
             inset-0
-            pointer-events-none
             overflow-hidden
           "
           aria-hidden="true"
         >
           {/* Violet glow */}
+
           <div
             className="
               absolute
-              left-[-30%]
-              sm:left-[-15%]
-              top-[10%]
-              h-[300px]
-              w-[300px]
-              sm:h-[500px]
-              sm:w-[500px]
+              -left-[25vw]
+              top-[8%]
+              h-[45vw]
+              w-[45vw]
+              max-h-[650px]
+              max-w-[650px]
               rounded-full
               blur-[100px]
-              sm:blur-[130px]
-              opacity-20
+              opacity-[0.15]
+              sm:blur-[140px]
             "
             style={{
-              background: "var(--violet)",
+              background:
+                "var(--violet)",
             }}
           />
 
           {/* Green glow */}
+
           <div
             className="
               absolute
-              right-[-25%]
-              sm:right-[-10%]
-              bottom-[5%]
-              h-[280px]
-              w-[280px]
-              sm:h-[450px]
-              sm:w-[450px]
+              -right-[20vw]
+              bottom-[-5%]
+              h-[42vw]
+              w-[42vw]
+              max-h-[600px]
+              max-w-[600px]
               rounded-full
               blur-[100px]
+              opacity-[0.11]
               sm:blur-[140px]
-              opacity-15
             "
             style={{
-              background: "var(--green)",
+              background:
+                "var(--green)",
             }}
           />
 
-          {/* Central glow */}
+          {/* Center glow */}
+
           <div
             className="
               absolute
               left-1/2
-              top-[35%]
-              h-[200px]
-              w-[400px]
-              sm:h-[300px]
-              sm:w-[700px]
+              top-1/2
+              h-[40vh]
+              w-[80vw]
               -translate-x-1/2
+              -translate-y-1/2
               rounded-full
-              blur-[110px]
+              blur-[100px]
+              opacity-[0.045]
               sm:blur-[150px]
-              opacity-[0.06]
             "
             style={{
-              background: "var(--text)",
+              background:
+                "var(--text)",
             }}
           />
 
-          {/* Technical grid */}
+          {/* Grid */}
+
           <div
             className="
               absolute
               inset-0
-              opacity-[0.045]
-              sm:opacity-[0.055]
+              opacity-[0.035]
+              sm:opacity-[0.05]
             "
             style={{
               backgroundImage: `
-                linear-gradient(var(--text) 1px, transparent 1px),
-                linear-gradient(90deg, var(--text) 1px, transparent 1px)
+                linear-gradient(
+                  var(--text) 1px,
+                  transparent 1px
+                ),
+                linear-gradient(
+                  90deg,
+                  var(--text) 1px,
+                  transparent 1px
+                )
               `,
-              backgroundSize: "55px 55px",
+              backgroundSize:
+                "55px 55px",
               maskImage:
-                "radial-gradient(circle at center, black 0%, transparent 75%)",
+                "radial-gradient(circle at center, black 0%, transparent 78%)",
               WebkitMaskImage:
-                "radial-gradient(circle at center, black 0%, transparent 75%)",
+                "radial-gradient(circle at center, black 0%, transparent 78%)",
             }}
           />
 
           {/* Horizon */}
+
           <div
             className="
               absolute
               left-1/2
-              top-[48%]
+              top-[58%]
               h-px
-              w-[90%]
-              sm:w-[80%]
+              w-full
               -translate-x-1/2
-              blur-[2px]
               opacity-20
+              blur-[2px]
             "
             style={{
               background:
@@ -816,928 +899,1024 @@ export default function ScrollChart() {
           />
         </div>
 
-        {/* CONTENT */}
-        <div className="relative z-10 w-full">
+        {/* ===================================================
+            MAIN CONTENT
+        =================================================== */}
+
+        <div
+          className="
+            relative
+            z-10
+            flex
+            h-full
+            w-full
+            flex-col
+            justify-start
+            overflow-visible
+          "
+        >
+          {/* =================================================
+              HEADING
+          ================================================= */}
+
           <div
             className="
-              w-full
-              max-w-7xl
+              relative
+              z-30
               mx-auto
-              px-3
-              sm:px-5
-              md:px-8
+              w-full
+              max-w-6xl
+              shrink-0
+              px-5
+              pt-[100px]
+              text-center
+              sm:px-8
+              sm:pt-[112px]
+              lg:pt-[118px]
+              xl:pt-[122px]
             "
           >
-            {/* HEADING */}
             <div
               className="
-                text-center
-                mb-5
-                sm:mb-10
-                lg:mb-14
+                mb-2
+                font-mono
+                text-[8px]
+                tracking-[0.22em]
+                text-violet-bright
+                sm:mb-4
+                sm:text-xs
+                sm:tracking-[0.28em]
               "
             >
-              <div
-                className="
-                  font-mono
-                  text-[8px]
-                  xs:text-[9px]
-                  sm:text-xs
-                  tracking-[0.2em]
-                  sm:tracking-[0.25em]
-                  text-violet-bright
-                  mb-2
-                  sm:mb-4
-                "
-              >
-                LIVE ON EVERY CHART
-              </div>
-
-              <h2
-                className="
-                  font-display
-                  text-2xl
-                  sm:text-3xl
-                  md:text-4xl
-                  lg:text-5xl
-                  tracking-tight
-                  text-text
-                  max-w-2xl
-                  mx-auto
-                  leading-tight
-                "
-              >
-                Built for real price action,
-                <br />
-                <span className="opacity-50">
-                  not just demos.
-                </span>
-              </h2>
+              LIVE ON EVERY CHART
             </div>
 
-            {/* CHART SCENE */}
+            <h2
+              className="
+                mx-auto
+                max-w-[950px]
+                font-display
+                text-[clamp(2rem,5.1vw,4.6rem)]
+                leading-[1.03]
+                tracking-tight
+                text-text
+              "
+            >
+              Built for real price action,
+              <br />
+
+              <span className="opacity-45">
+                not just demos.
+              </span>
+            </h2>
+          </div>
+
+          {/* =================================================
+              CHART AREA
+          ================================================= */}
+
+          <div
+            className="
+              relative
+              mt-2
+              flex
+              min-h-0
+              w-full
+              flex-1
+              items-center
+              justify-center
+              overflow-visible
+              sm:mt-0
+              lg:mt-[-15px]
+            "
+            style={{
+              perspective:
+                "1400px",
+            }}
+          >
+            {/* Chart glow */}
+
+            <div
+              className="
+                pointer-events-none
+                absolute
+                left-1/2
+                top-[55%]
+                h-[55%]
+                w-[100%]
+                -translate-x-1/2
+                -translate-y-1/2
+                rounded-full
+                blur-[70px]
+                opacity-[0.18]
+                sm:blur-[110px]
+              "
+              style={{
+                background:
+                  "radial-gradient(circle, var(--violet), transparent 65%)",
+              }}
+            />
+
+            {/* =================================================
+                PERSPECTIVE FLOOR
+            ================================================= */}
+
+            <div
+              className="
+                pointer-events-none
+                absolute
+                bottom-[-8%]
+                left-1/2
+                h-[30%]
+                w-full
+                -translate-x-1/2
+                rotate-x-[65deg]
+                opacity-[0.045]
+                sm:opacity-[0.07]
+              "
+              style={{
+                backgroundImage: `
+                  linear-gradient(
+                    var(--violet) 1px,
+                    transparent 1px
+                  ),
+                  linear-gradient(
+                    90deg,
+                    var(--violet) 1px,
+                    transparent 1px
+                  )
+                `,
+                backgroundSize:
+                  "40px 40px",
+                maskImage:
+                  "linear-gradient(to bottom, black, transparent)",
+                WebkitMaskImage:
+                  "linear-gradient(to bottom, black, transparent)",
+              }}
+            />
+
+            {/* =================================================
+                RESPONSIVE CHART
+
+                MOBILE:
+                190vw
+
+                TABLET:
+                145vw
+
+                DESKTOP:
+                103vw
+            ================================================= */}
+
             <div
               className="
                 relative
-                w-full
+                left-1/2
+                w-[190vw]
+                max-w-none
+                -translate-x-1/2
+                translate-y-2
+                sm:w-[145vw]
+                sm:translate-y-0
+                md:w-[120vw]
+                lg:left-0
+                lg:w-[103vw]
+                lg:translate-x-0
               "
               style={{
-                perspective: "1400px",
+                transform:
+                  `translateY(${parallax}px)`,
               }}
             >
-              {/* Ground glow */}
-              <div
-                className="
-                  absolute
-                  left-1/2
-                  top-1/2
-                  -z-10
-                  h-[70%]
-                  w-[90%]
-                  -translate-x-1/2
-                  -translate-y-1/2
-                  rounded-full
-                  blur-[70px]
-                  sm:blur-[100px]
-                  opacity-25
-                  sm:opacity-30
-                "
-                style={{
-                  background:
-                    "radial-gradient(circle, var(--violet), transparent 65%)",
-                }}
-              />
+              {/* =================================================
+                  SVG
+              ================================================= */}
 
-              {/* 3D floor */}
-              <div
+              <svg
+                viewBox="0 0 1200 420"
+                preserveAspectRatio="xMidYMid meet"
                 className="
-                  absolute
-                  left-1/2
-                  bottom-[-50px]
-                  sm:bottom-[-80px]
-                  -z-10
-                  h-[150px]
-                  sm:h-[240px]
-                  w-[90%]
-                  sm:w-[85%]
-                  -translate-x-1/2
-                  rotate-x-[65deg]
-                  opacity-[0.08]
-                  sm:opacity-[0.10]
+                  block
+                  h-auto
+                  w-full
+                  overflow-visible
                 "
-                style={{
-                  backgroundImage: `
-                    linear-gradient(var(--violet) 1px, transparent 1px),
-                    linear-gradient(90deg, var(--violet) 1px, transparent 1px)
-                  `,
-                  backgroundSize: "40px 40px",
-                  maskImage:
-                    "linear-gradient(to bottom, black, transparent)",
-                  WebkitMaskImage:
-                    "linear-gradient(to bottom, black, transparent)",
-                }}
-              />
-
-              {/* GLASS PANEL */}
-              <div
-                className="
-                  relative
-                  rounded-[16px]
-                  sm:rounded-[24px]
-                  border
-                  border-white/[0.12]
-                  bg-white/[0.045]
-                  backdrop-blur-2xl
-                  overflow-hidden
-                "
-                style={{
-                  transform: `
-                    translateY(${parallax}px)
-                    rotateX(1deg)
-                  `,
-                  boxShadow: `
-                    0 25px 70px -30px rgba(0,0,0,0.65),
-                    0 0 70px -50px var(--violet),
-                    inset 0 1px 0 rgba(255,255,255,0.12),
-                    inset 0 -1px 0 rgba(255,255,255,0.04)
-                  `,
-                }}
+                aria-hidden="true"
               >
-                {/* Top highlight */}
-                <div
-                  className="
-                    pointer-events-none
-                    absolute
-                    inset-x-0
-                    top-0
-                    h-[2px]
-                  "
-                  style={{
-                    background:
-                      "linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent)",
-                  }}
-                />
+                {/* =================================================
+                    SVG DEFINITIONS
+                ================================================= */}
 
-                {/* Violet reflection */}
-                <div
-                  className="
-                    pointer-events-none
-                    absolute
-                    left-[-100px]
-                    top-[-100px]
-                    h-[220px]
-                    w-[220px]
-                    sm:h-[300px]
-                    sm:w-[300px]
-                    rounded-full
-                    blur-[80px]
-                    sm:blur-[100px]
-                    opacity-20
-                  "
-                  style={{
-                    background: "var(--violet)",
-                  }}
-                />
+                <defs>
+                  {/* Green glow */}
 
-                {/* Green reflection */}
-                <div
-                  className="
-                    pointer-events-none
-                    absolute
-                    right-[-100px]
-                    bottom-[-120px]
-                    h-[250px]
-                    w-[250px]
-                    sm:h-[350px]
-                    sm:w-[350px]
-                    rounded-full
-                    blur-[90px]
-                    sm:blur-[110px]
-                    opacity-15
-                  "
-                  style={{
-                    background: "var(--green)",
-                  }}
-                />
-
-                {/* HEADER */}
-                <div
-                  className="
-                    relative
-                    flex
-                    items-center
-                    justify-between
-                    px-3
-                    py-3
-                    sm:px-7
-                    sm:py-4
-                    border-b
-                    border-white/[0.06]
-                  "
-                >
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div
-                      className="
-                        h-1.5
-                        w-1.5
-                        sm:h-2
-                        sm:w-2
-                        rounded-full
-                        animate-pulse
-                      "
-                      style={{
-                        background: "var(--green)",
-                        boxShadow: "0 0 14px var(--green)",
-                      }}
+                  <filter
+                    id="greenGlow"
+                    x="-100%"
+                    y="-100%"
+                    width="300%"
+                    height="300%"
+                  >
+                    <feGaussianBlur
+                      stdDeviation="5"
+                      result="blur"
                     />
 
-                    <span
-                      className="
-                        font-mono
-                        text-[8px]
-                        sm:text-xs
-                        text-white/50
-                        tracking-wider
-                      "
-                    >
-                      MARKET / LIVE
-                    </span>
-                  </div>
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
 
-                  <div
-                    className="
-                      font-mono
-                      text-[8px]
-                      sm:text-[10px]
-                      text-white/30
-                    "
+                  {/* Red glow */}
+
+                  <filter
+                    id="redGlow"
+                    x="-100%"
+                    y="-100%"
+                    width="300%"
+                    height="300%"
                   >
-                    01H · PRICE ACTION
-                  </div>
-                </div>
+                    <feGaussianBlur
+                      stdDeviation="6"
+                      result="blur"
+                    />
 
-                {/* CHART */}
-                <div
-                  className="
-                    relative
-                    px-2
-                    py-3
-                    sm:p-8
-                    lg:p-10
-                  "
-                >
-                  <svg
-                    viewBox="0 0 1200 420"
-                    preserveAspectRatio="xMidYMid meet"
-                    className="
-                      relative
-                      block
-                      w-full
-                      h-auto
-                      aspect-[1200/420]
-                      overflow-visible
-                    "
-                    aria-hidden="true"
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+
+                  {/* Signal glow */}
+
+                  <filter
+                    id="signalGlow"
+                    x="-100%"
+                    y="-100%"
+                    width="300%"
+                    height="300%"
                   >
-                    {/* GRID */}
-                    {[70, 140, 210, 280, 350].map((y) => (
-                      <line
-                        key={`h-${y}`}
-                        x1="0"
-                        y1={y}
-                        x2="1200"
-                        y2={y}
-                        stroke="var(--border)"
-                        strokeWidth="1"
-                        opacity="0.7"
-                      />
-                    ))}
+                    <feGaussianBlur
+                      stdDeviation="4"
+                      result="blur"
+                    />
 
-                    {[100, 250, 400, 550, 700, 850, 1000, 1150].map(
-                      (x) => (
-                        <line
-                          key={`v-${x}`}
-                          x1={x}
-                          y1="0"
-                          x2={x}
-                          y2="420"
-                          stroke="var(--border)"
-                          strokeWidth="1"
-                          opacity="0.35"
-                        />
-                      )
-                    )}
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
 
-                    <defs>
-                      {/* Green glow */}
-                      <filter
-                        id="greenGlow"
-                        x="-100%"
-                        y="-100%"
-                        width="300%"
-                        height="300%"
-                      >
-                        <feGaussianBlur
-                          stdDeviation="5"
-                          result="blur"
-                        />
-                        <feMerge>
-                          <feMergeNode in="blur" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
+                  {/* Signal shadow */}
 
-                      {/* Red glow */}
-                      <filter
-                        id="redGlow"
-                        x="-100%"
-                        y="-100%"
-                        width="300%"
-                        height="300%"
-                      >
-                        <feGaussianBlur
-                          stdDeviation="6"
-                          result="blur"
-                        />
-                        <feMerge>
-                          <feMergeNode in="blur" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
+                  <filter
+                    id="signalShadow"
+                    x="-100%"
+                    y="-100%"
+                    width="300%"
+                    height="300%"
+                  >
+                    <feDropShadow
+                      dx="0"
+                      dy="5"
+                      stdDeviation="5"
+                      floodOpacity="0.4"
+                    />
+                  </filter>
 
-                      {/* BUY gradient */}
-                      <linearGradient
-                        id="buyGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="0%"
-                          stopColor="var(--green)"
-                          stopOpacity="1"
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor="var(--green)"
-                          stopOpacity="0.45"
-                        />
-                      </linearGradient>
+                  {/* BUY gradient */}
 
-                      {/* SELL gradient */}
-                      <linearGradient
-                        id="sellGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="0%"
-                          stopColor="var(--red)"
-                          stopOpacity="1"
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor="var(--red)"
-                          stopOpacity="0.45"
-                        />
-                      </linearGradient>
+                  <linearGradient
+                    id="buyGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="0%"
+                      stopColor="var(--green)"
+                      stopOpacity="1"
+                    />
 
-                      {/* Signal shadow */}
-                      <filter
-                        id="signalShadow"
-                        x="-100%"
-                        y="-100%"
-                        width="300%"
-                        height="300%"
-                      >
-                        <feDropShadow
-                          dx="0"
-                          dy="5"
-                          stdDeviation="5"
-                          floodOpacity="0.45"
-                        />
-                      </filter>
+                    <stop
+                      offset="100%"
+                      stopColor="var(--green)"
+                      stopOpacity="0.45"
+                    />
+                  </linearGradient>
 
-                      {/* Signal glow */}
-                      <filter
-                        id="signalGlow"
-                        x="-100%"
-                        y="-100%"
-                        width="300%"
-                        height="300%"
-                      >
-                        <feGaussianBlur
-                          stdDeviation="4"
-                          result="blur"
-                        />
-                        <feMerge>
-                          <feMergeNode in="blur" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
+                  {/* SELL gradient */}
 
-                      {/* Trend gradient */}
-                      <linearGradient
-                        id="trendGradient"
-                        x1="0"
-                        y1="0"
-                        x2="1"
-                        y2="0"
-                      >
-                        <stop
-                          offset="0%"
-                          stopColor="var(--text)"
-                          stopOpacity="0.25"
-                        />
-                        <stop
-                          offset="45%"
-                          stopColor="var(--text)"
-                          stopOpacity="0.95"
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor="var(--violet)"
-                          stopOpacity="1"
-                        />
-                      </linearGradient>
-                    </defs>
+                  <linearGradient
+                    id="sellGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="0%"
+                      stopColor="var(--red)"
+                      stopOpacity="1"
+                    />
 
-                    {/* CANDLES */}
-                    {candles.map((c, i) => {
-                      const threshold = i / candles.length;
+                    <stop
+                      offset="100%"
+                      stopColor="var(--red)"
+                      stopOpacity="0.45"
+                    />
+                  </linearGradient>
 
-                      const local = clamp01(
-                        (progress - threshold) * 3.2
+                  {/* Trend gradient */}
+
+                  <linearGradient
+                    id="trendGradient"
+                    x1="0"
+                    y1="0"
+                    x2="1"
+                    y2="0"
+                  >
+                    <stop
+                      offset="0%"
+                      stopColor="var(--text)"
+                      stopOpacity="0.15"
+                    />
+
+                    <stop
+                      offset="45%"
+                      stopColor="var(--text)"
+                      stopOpacity="0.85"
+                    />
+
+                    <stop
+                      offset="100%"
+                      stopColor="var(--violet)"
+                      stopOpacity="1"
+                    />
+                  </linearGradient>
+                </defs>
+
+                {/* =================================================
+                    HORIZONTAL GRID
+                ================================================= */}
+
+                {[70, 140, 210, 280, 350].map(
+                  (y) => (
+                    <line
+                      key={`h-${y}`}
+                      x1="0"
+                      y1={y}
+                      x2="1200"
+                      y2={y}
+                      stroke="var(--border)"
+                      strokeWidth="1"
+                      opacity="0.55"
+                    />
+                  )
+                )}
+
+                {/* =================================================
+                    VERTICAL GRID
+                ================================================= */}
+
+                {[
+                  100,
+                  250,
+                  400,
+                  550,
+                  700,
+                  850,
+                  1000,
+                  1150,
+                ].map((x) => (
+                  <line
+                    key={`v-${x}`}
+                    x1={x}
+                    y1="0"
+                    x2={x}
+                    y2="420"
+                    stroke="var(--border)"
+                    strokeWidth="1"
+                    opacity="0.25"
+                  />
+                ))}
+
+                {/* =================================================
+                    CANDLES
+                ================================================= */}
+
+                {candles.map(
+                  (candle, index) => {
+                    const threshold =
+                      index /
+                      candles.length;
+
+                    const localProgress =
+                      clamp01(
+                        (progress -
+                          threshold) *
+                          3.2
                       );
 
-                      if (local <= 0) return null;
+                    if (
+                      localProgress <= 0
+                    ) {
+                      return null;
+                    }
 
-                      const eased = easeOutCubic(local);
+                    const eased =
+                      easeOutCubic(
+                        localProgress
+                      );
 
-                      const color =
-                        c.color === "up"
-                          ? "var(--green)"
-                          : "var(--red)";
+                    const color =
+                      candle.color ===
+                      "up"
+                        ? "var(--green)"
+                        : "var(--red)";
 
-                      const height = Math.max(
+                    const height =
+                      Math.max(
                         2,
-                        c.bottom - c.top
+                        candle.bottom -
+                          candle.top
                       );
 
-                      const midY = c.top + height / 2;
+                    const middle =
+                      candle.top +
+                      height / 2;
 
-                      return (
-                        <g key={i}>
-                          {/* Wick */}
-                          <line
-                            x1={c.x}
-                            y1={c.wickTop}
-                            x2={c.x}
-                            y2={c.wickBottom}
-                            stroke={color}
-                            strokeWidth="1.5"
-                            opacity={eased * 0.7}
-                            style={{
-                              transform: `scaleY(${eased})`,
-                              transformOrigin: `${c.x}px ${midY}px`,
-                            }}
-                          />
+                    return (
+                      <g
+                        key={index}
+                      >
+                        {/* Wick */}
 
-                          {/* Candle glow */}
-                          <rect
-                            x={c.x - 4}
-                            y={c.top}
-                            width="8"
-                            height={height}
-                            rx="2"
-                            fill={color}
-                            opacity={eased * 0.18}
-                            filter={
-                              c.color === "up"
-                                ? "url(#greenGlow)"
-                                : "url(#redGlow)"
-                            }
-                          />
+                        <line
+                          x1={candle.x}
+                          y1={
+                            candle.wickTop
+                          }
+                          x2={candle.x}
+                          y2={
+                            candle.wickBottom
+                          }
+                          stroke={color}
+                          strokeWidth="2"
+                          opacity={
+                            eased * 0.7
+                          }
+                          style={{
+                            transform:
+                              `scaleY(${eased})`,
+                            transformOrigin:
+                              `${candle.x}px ${middle}px`,
+                          }}
+                        />
 
-                          {/* Candle body */}
-                          <rect
-                            x={c.x - 3.5}
-                            y={c.top}
-                            width="7"
-                            height={height}
-                            rx="1.5"
-                            fill={color}
-                            opacity={eased}
-                            style={{
-                              transform: `scaleY(${eased})`,
-                              transformOrigin: `${c.x}px ${midY}px`,
-                            }}
-                          />
-                        </g>
+                        {/* Candle glow */}
+
+                        <rect
+                          x={
+                            candle.x - 5
+                          }
+                          y={
+                            candle.top
+                          }
+                          width="10"
+                          height={height}
+                          rx="2"
+                          fill={color}
+                          opacity={
+                            eased * 0.18
+                          }
+                          filter={
+                            candle.color ===
+                            "up"
+                              ? "url(#greenGlow)"
+                              : "url(#redGlow)"
+                          }
+                        />
+
+                        {/* Candle body */}
+
+                        <rect
+                          x={
+                            candle.x - 4
+                          }
+                          y={
+                            candle.top
+                          }
+                          width="8"
+                          height={height}
+                          rx="1.5"
+                          fill={color}
+                          opacity={eased}
+                          style={{
+                            transform:
+                              `scaleY(${eased})`,
+                            transformOrigin:
+                              `${candle.x}px ${middle}px`,
+                          }}
+                        />
+                      </g>
+                    );
+                  }
+                )}
+
+                {/* =================================================
+                    BUY / SELL SIGNALS
+                ================================================= */}
+
+                {SIGNALS.map(
+                  (
+                    signal,
+                    signalIndex
+                  ) => {
+                    const candle =
+                      candles[
+                        signal.index
+                      ];
+
+                    if (!candle)
+                      return null;
+
+                    const threshold =
+                      signal.index /
+                      candles.length;
+
+                    const signalProgress =
+                      clamp01(
+                        (progress -
+                          threshold) *
+                          4
                       );
-                    })}
 
-                    {/* BUY / SELL SIGNALS */}
-                    {SIGNALS.map((signal, signalIndex) => {
-                      const candle = candles[signal.index];
+                    if (
+                      signalProgress <=
+                      0
+                    ) {
+                      return null;
+                    }
 
-                      if (!candle) return null;
-
-                      const signalThreshold =
-                        signal.index / candles.length;
-
-                      const signalProgress = clamp01(
-                        (progress - signalThreshold) * 4
+                    const easedSignal =
+                      easeOutCubic(
+                        signalProgress
                       );
 
-                      if (signalProgress <= 0) return null;
+                    const isBuy =
+                      signal.type ===
+                      "BUY";
 
-                      const easedSignal =
-                        easeOutCubic(signalProgress);
-
-                      const isBuy = signal.type === "BUY";
-
-                      const signalY = isBuy
+                    const signalY =
+                      isBuy
                         ? Math.min(
                             390,
-                            candle.wickBottom + 32
+                            candle.wickBottom +
+                              32
                           )
                         : Math.max(
                             30,
-                            candle.wickTop - 32
+                            candle.wickTop -
+                              32
                           );
 
-                      const offset =
-                        signalIndex % 2 === 0 ? -2 : 2;
+                    const offset =
+                      signalIndex %
+                        2 ===
+                      0
+                        ? -2
+                        : 2;
 
-                      const y = signalY + offset;
+                    const y =
+                      signalY + offset;
 
-                      /*
-                       * Responsive visual sizing:
-                       * SVG scales automatically with the viewport,
-                       * so these remain proportional on mobile.
-                       */
-                      const boxWidth = 72;
-                      const boxHeight = 30;
+                    const boxWidth =
+                      76;
 
-                      const boxX =
-                        candle.x - boxWidth / 2;
+                    const boxHeight =
+                      31;
 
-                      const translateY = isBuy
-                        ? (1 - easedSignal) * 14
-                        : -(1 - easedSignal) * 14;
+                    const boxX =
+                      candle.x -
+                      boxWidth / 2;
 
-                      return (
-                        <g
-                          key={`signal-${signal.type}-${signal.index}`}
-                          style={{
-                            opacity: easedSignal,
-                            transform: `
-                              translateY(${translateY}px)
-                              scale(${0.82 + easedSignal * 0.18})
-                            `,
-                            transformOrigin: `${candle.x}px ${y}px`,
-                          }}
+                    const translateY =
+                      isBuy
+                        ? (1 -
+                            easedSignal) *
+                          14
+                        : -(
+                            (1 -
+                              easedSignal) *
+                            14
+                          );
+
+                    return (
+                      <g
+                        key={`${signal.type}-${signal.index}`}
+                        style={{
+                          opacity:
+                            easedSignal,
+
+                          transform: `
+                            translateY(${translateY}px)
+                            scale(${0.82 + easedSignal * 0.18})
+                          `,
+
+                          transformOrigin:
+                            `${candle.x}px ${y}px`,
+                        }}
+                      >
+                        {/* Connector */}
+
+                        <line
+                          x1={candle.x}
+                          y1={
+                            isBuy
+                              ? candle.wickBottom
+                              : candle.wickTop
+                          }
+                          x2={candle.x}
+                          y2={
+                            isBuy
+                              ? y -
+                                boxHeight /
+                                  2
+                              : y +
+                                boxHeight /
+                                  2
+                          }
+                          stroke={
+                            isBuy
+                              ? "var(--green)"
+                              : "var(--red)"
+                          }
+                          strokeWidth="1"
+                          strokeDasharray="3 4"
+                          opacity="0.65"
+                        />
+
+                        {/* Signal glow */}
+
+                        <rect
+                          x={
+                            boxX - 4
+                          }
+                          y={
+                            y -
+                            boxHeight /
+                              2 -
+                            4
+                          }
+                          width={
+                            boxWidth + 8
+                          }
+                          height={
+                            boxHeight + 8
+                          }
+                          rx="9"
+                          fill={
+                            isBuy
+                              ? "var(--green)"
+                              : "var(--red)"
+                          }
+                          opacity="0.12"
+                          filter="url(#signalGlow)"
+                        />
+
+                        {/* Signal box */}
+
+                        <rect
+                          x={boxX}
+                          y={
+                            y -
+                            boxHeight /
+                              2
+                          }
+                          width={
+                            boxWidth
+                          }
+                          height={
+                            boxHeight
+                          }
+                          rx="7"
+                          fill={
+                            isBuy
+                              ? "url(#buyGradient)"
+                              : "url(#sellGradient)"
+                          }
+                          fillOpacity="0.9"
+                          stroke={
+                            isBuy
+                              ? "var(--green)"
+                              : "var(--red)"
+                          }
+                          strokeOpacity="0.7"
+                          strokeWidth="1"
+                          filter="url(#signalShadow)"
+                        />
+
+                        {/* Highlight */}
+
+                        <rect
+                          x={
+                            boxX + 1
+                          }
+                          y={
+                            y -
+                            boxHeight /
+                              2 +
+                            1
+                          }
+                          width={
+                            boxWidth - 2
+                          }
+                          height="9"
+                          rx="6"
+                          fill="white"
+                          opacity="0.08"
+                        />
+
+                        {/* BUY arrow */}
+
+                        {isBuy ? (
+                          <path
+                            d={`
+                              M ${candle.x - 24} ${y + 5}
+                              L ${candle.x - 18} ${y - 3}
+                              L ${candle.x - 12} ${y + 5}
+                            `}
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="1.7"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            opacity="0.9"
+                          />
+                        ) : (
+                          <path
+                            d={`
+                              M ${candle.x - 24} ${y - 5}
+                              L ${candle.x - 18} ${y + 3}
+                              L ${candle.x - 12} ${y - 5}
+                            `}
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="1.7"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            opacity="0.9"
+                          />
+                        )}
+
+                        {/* Text */}
+
+                        <text
+                          x={
+                            candle.x + 7
+                          }
+                          y={y + 4}
+                          textAnchor="middle"
+                          fill="white"
+                          fontSize="11"
+                          fontWeight="700"
+                          fontFamily="monospace"
+                          letterSpacing="1"
                         >
-                          {/* Connector */}
-                          <line
-                            x1={candle.x}
-                            y1={
-                              isBuy
-                                ? candle.wickBottom
-                                : candle.wickTop
-                            }
-                            x2={candle.x}
-                            y2={
-                              isBuy
-                                ? y - boxHeight / 2
-                                : y + boxHeight / 2
-                            }
-                            stroke={
-                              isBuy
-                                ? "var(--green)"
-                                : "var(--red)"
-                            }
-                            strokeWidth="1"
-                            strokeDasharray="3 4"
-                            opacity="0.65"
-                          />
+                          {signal.type}
+                        </text>
 
-                          {/* Glow */}
-                          <rect
-                            x={boxX - 4}
-                            y={
-                              y -
-                              boxHeight / 2 -
-                              4
-                            }
-                            width={boxWidth + 8}
-                            height={boxHeight + 8}
-                            rx="10"
-                            fill={
-                              isBuy
-                                ? "var(--green)"
-                                : "var(--red)"
-                            }
-                            opacity="0.12"
-                            filter="url(#signalGlow)"
-                          />
+                        {/* Status dot */}
 
-                          {/* Back edge */}
-                          <rect
-                            x={boxX}
-                            y={
-                              y -
-                              boxHeight / 2 +
-                              4
-                            }
-                            width={boxWidth}
-                            height={boxHeight}
-                            rx="7"
-                            fill="rgba(0,0,0,0.55)"
-                            opacity="0.7"
-                          />
+                        <circle
+                          cx={
+                            boxX +
+                            boxWidth -
+                            9
+                          }
+                          cy={
+                            y -
+                            boxHeight /
+                              2 +
+                            9
+                          }
+                          r="2"
+                          fill="white"
+                          opacity="0.8"
+                          style={{
+                            filter:
+                              "drop-shadow(0 0 4px white)",
+                          }}
+                        />
+                      </g>
+                    );
+                  }
+                )}
 
-                          {/* Main signal */}
-                          <rect
-                            x={boxX}
-                            y={
-                              y -
-                              boxHeight / 2
-                            }
-                            width={boxWidth}
-                            height={boxHeight}
-                            rx="7"
-                            fill={
-                              isBuy
-                                ? "url(#buyGradient)"
-                                : "url(#sellGradient)"
-                            }
-                            fillOpacity="0.9"
-                            stroke={
-                              isBuy
-                                ? "var(--green)"
-                                : "var(--red)"
-                            }
-                            strokeOpacity="0.7"
-                            strokeWidth="1"
-                            filter="url(#signalShadow)"
-                          />
+                {/* =================================================
+                    TREND GLOW
+                ================================================= */}
 
-                          {/* Highlight */}
-                          <rect
-                            x={boxX + 1}
-                            y={
-                              y -
-                              boxHeight / 2 +
-                              1
-                            }
-                            width={boxWidth - 2}
-                            height="10"
-                            rx="6"
-                            fill="white"
-                            opacity="0.08"
-                          />
-
-                          {/* Icon */}
-                          {isBuy ? (
-                            <path
-                              d={`
-                                M ${candle.x - 25} ${y + 5}
-                                L ${candle.x - 19} ${y - 3}
-                                L ${candle.x - 13} ${y + 5}
-                              `}
-                              fill="none"
-                              stroke="white"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              opacity="0.9"
-                            />
-                          ) : (
-                            <path
-                              d={`
-                                M ${candle.x - 25} ${y - 5}
-                                L ${candle.x - 19} ${y + 3}
-                                L ${candle.x - 13} ${y - 5}
-                              `}
-                              fill="none"
-                              stroke="white"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              opacity="0.9"
-                            />
-                          )}
-
-                          {/* Text */}
-                          <text
-                            x={candle.x + 7}
-                            y={y + 4}
-                            textAnchor="middle"
-                            fill="white"
-                            fontSize="11"
-                            fontWeight="700"
-                            fontFamily="monospace"
-                            letterSpacing="1.2"
-                          >
-                            {signal.type}
-                          </text>
-
-                          {/* Status dot */}
-                          <circle
-                            cx={
-                              boxX +
-                              boxWidth -
-                              9
-                            }
-                            cy={
-                              y -
-                              boxHeight / 2 +
-                              9
-                            }
-                            r="2"
-                            fill="white"
-                            opacity="0.8"
-                            style={{
-                              filter:
-                                "drop-shadow(0 0 4px white)",
-                            }}
-                          />
-                        </g>
-                      );
-                    })}
-
-                    {/* TREND LINE GLOW */}
-                    <path
-                      d={TREND_PATH}
-                      fill="none"
-                      stroke="var(--violet)"
-                      strokeOpacity="0.25"
-                      strokeWidth="12"
-                      strokeLinecap="round"
-                      pathLength={1}
-                      style={{
-                        strokeDasharray: 1,
-                        strokeDashoffset:
-                          1 - progress,
-                        filter: "blur(7px)",
-                      }}
-                    />
-
-                    {/* MAIN TREND LINE */}
-                    <path
-                      d={TREND_PATH}
-                      fill="none"
-                      stroke="url(#trendGradient)"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      pathLength={1}
-                      style={{
-                        strokeDasharray: 1,
-                        strokeDashoffset:
-                          1 - progress,
-                      }}
-                    />
-
-                    {/* PRICE DOT */}
-                    <circle
-                      cx="1180"
-                      cy="133"
-                      r="5"
-                      fill="var(--violet)"
-                      opacity={progress}
-                      style={{
-                        filter:
-                          "drop-shadow(0 0 10px var(--violet))",
-                      }}
-                    />
-
-                    <circle
-                      cx="1180"
-                      cy="133"
-                      r="11"
-                      fill="none"
-                      stroke="var(--violet)"
-                      strokeWidth="1"
-                      opacity={progress * 0.35}
-                    />
-                  </svg>
-
-                  {/* PRICE LABEL */}
-                  <div
-                    className="
-                      pointer-events-none
-                      absolute
-                      right-2
-                      sm:right-5
-                      top-1/2
-                      -translate-y-1/2
-                      rounded-md
-                      sm:rounded-lg
-                      border
-                      border-white/10
-                      bg-black/20
-                      backdrop-blur-md
-                      px-1.5
-                      py-1
-                      sm:px-3
-                      sm:py-2
-                      font-mono
-                      text-[7px]
-                      sm:text-[9px]
-                      text-white/40
-                    "
-                  >
-                    +24.82%
-                  </div>
-
-                  {/* TIME */}
-                  <div
-                    className="
-                      flex
-                      justify-between
-                      items-center
-                      mt-1
-                      sm:mt-2
-                      px-1
-                      font-mono
-                      text-[7px]
-                      sm:text-[9px]
-                      text-white/20
-                      tracking-wider
-                    "
-                  >
-                    <span>09:30</span>
-                    <span>12:00</span>
-                    <span>14:30</span>
-                    <span>16:00</span>
-                  </div>
-                </div>
-
-                {/* Bottom fade */}
-                <div
-                  className="
-                    pointer-events-none
-                    absolute
-                    inset-x-0
-                    bottom-0
-                    h-12
-                    sm:h-20
-                    bg-gradient-to-t
-                    from-black/10
-                    to-transparent
-                  "
+                <path
+                  d={TREND_PATH}
+                  fill="none"
+                  stroke="var(--violet)"
+                  strokeOpacity="0.22"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                  pathLength={1}
+                  style={{
+                    strokeDasharray: 1,
+                    strokeDashoffset:
+                      1 - progress,
+                    filter:
+                      "blur(7px)",
+                  }}
                 />
+
+                {/* =================================================
+                    MAIN TREND
+                ================================================= */}
+
+                <path
+                  d={TREND_PATH}
+                  fill="none"
+                  stroke="url(#trendGradient)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  pathLength={1}
+                  style={{
+                    strokeDasharray: 1,
+                    strokeDashoffset:
+                      1 - progress,
+                  }}
+                />
+
+                {/* =================================================
+                    CURRENT PRICE POINT
+                ================================================= */}
+
+                <circle
+                  cx="1180"
+                  cy="133"
+                  r="5"
+                  fill="var(--violet)"
+                  opacity={progress}
+                  style={{
+                    filter:
+                      "drop-shadow(0 0 10px var(--violet))",
+                  }}
+                />
+
+                <circle
+                  cx="1180"
+                  cy="133"
+                  r="11"
+                  fill="none"
+                  stroke="var(--violet)"
+                  strokeWidth="1"
+                  opacity={
+                    progress * 0.35
+                  }
+                />
+              </svg>
+
+              {/* =================================================
+                  PRICE LABEL
+              ================================================= */}
+
+              <div
+                className="
+                  pointer-events-none
+                  absolute
+                  right-[3vw]
+                  top-[31%]
+                  rounded-md
+                  border
+                  border-white/10
+                  bg-black/10
+                  px-1.5
+                  py-1
+                  font-mono
+                  text-[7px]
+                  text-white/35
+                  backdrop-blur-md
+                  sm:right-[4vw]
+                  sm:px-3
+                  sm:py-2
+                  sm:text-[9px]
+                "
+              >
+                +24.82%
               </div>
-
-              {/* Floating lights */}
-              <div
-                className="
-                  absolute
-                  -left-1
-                  sm:-left-5
-                  top-[18%]
-                  h-2
-                  w-2
-                  sm:h-3
-                  sm:w-3
-                  rounded-full
-                  opacity-60
-                  blur-[1px]
-                "
-                style={{
-                  background: "var(--violet)",
-                  boxShadow:
-                    "0 0 20px 6px var(--violet)",
-                }}
-              />
-
-              <div
-                className="
-                  absolute
-                  -right-1
-                  sm:-right-3
-                  top-[55%]
-                  h-1.5
-                  w-1.5
-                  sm:h-2
-                  sm:w-2
-                  rounded-full
-                  opacity-60
-                "
-                style={{
-                  background: "var(--green)",
-                  boxShadow:
-                    "0 0 20px 6px var(--green)",
-                }}
-              />
             </div>
           </div>
+
+          {/* =================================================
+              TIME AXIS
+          ================================================= */}
+
+          <div
+            className="
+              pointer-events-none
+              relative
+              z-20
+              mx-auto
+              mb-4
+              flex
+              w-[92vw]
+              max-w-[1400px]
+              shrink-0
+              items-center
+              justify-between
+              px-2
+              font-mono
+              text-[7px]
+              tracking-wider
+              text-white/20
+              sm:mb-7
+              sm:text-[9px]
+            "
+          >
+            <span>09:30</span>
+
+            <span>12:00</span>
+
+            <span>14:30</span>
+
+            <span>16:00</span>
+          </div>
         </div>
+
+        {/* =====================================================
+            DECORATIVE LIGHTS
+        ===================================================== */}
+
+        <div
+          className="
+            pointer-events-none
+            absolute
+            left-[2vw]
+            top-[27%]
+            h-2
+            w-2
+            rounded-full
+            opacity-60
+            blur-[1px]
+            sm:h-3
+            sm:w-3
+          "
+          style={{
+            background:
+              "var(--violet)",
+
+            boxShadow:
+              "0 0 20px 6px var(--violet)",
+          }}
+        />
+
+        <div
+          className="
+            pointer-events-none
+            absolute
+            right-[2vw]
+            top-[58%]
+            h-1.5
+            w-1.5
+            rounded-full
+            opacity-60
+            sm:h-2
+            sm:w-2
+          "
+          style={{
+            background:
+              "var(--green)",
+
+            boxShadow:
+              "0 0 20px 6px var(--green)",
+          }}
+        />
+
+        {/* =====================================================
+            BOTTOM FADE
+        ===================================================== */}
+
+        <div
+          className="
+            pointer-events-none
+            absolute
+            inset-x-0
+            bottom-0
+            h-20
+            bg-gradient-to-t
+            from-black/20
+            to-transparent
+            sm:h-32
+          "
+        />
       </div>
     </section>
   );
