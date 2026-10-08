@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { FiSend, FiPaperclip, FiAlertTriangle, FiFile, FiInfo } from "react-icons/fi";
+import { FiSend, FiPaperclip, FiAlertTriangle, FiFile, FiInfo, FiCheck, FiCheckCircle } from "react-icons/fi";
 
 interface Message {
   _id: string;
@@ -10,7 +10,13 @@ interface Message {
   fileName?: string;
   senderRole: "ADMIN" | "DEVELOPER" | "CLIENT" | "SYSTEM";
   sender: { name: string; role?: string } | string | null;
+  readBy: string[];
   createdAt: string;
+}
+
+interface TypingEntry {
+  name: string;
+  role: string;
 }
 
 // Chat is scoped to the CLIENT, not a project — any developer or admin
@@ -18,12 +24,14 @@ interface Message {
 // single conversation, matching the uniform chat model.
 export default function ChatBox({ clientId, myRole }: { clientId: string; myRole: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [typingUsers, setTypingUsers] = useState<TypingEntry[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const lastTypingPingRef = useRef(0);
 
   const loadMessages = useCallback(async () => {
     try {
@@ -31,6 +39,18 @@ export default function ChatBox({ clientId, myRole }: { clientId: string; myRole
       if (res.ok) {
         const data = await res.json();
         setMessages(data.messages);
+      }
+    } catch {
+      // silent — polling will retry
+    }
+  }, [clientId]);
+
+  const loadTyping = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/chat/${clientId}/typing`);
+      if (res.ok) {
+        const data = await res.json();
+        setTypingUsers(data.typing || []);
       }
     } catch {
       // silent — polling will retry
@@ -49,8 +69,28 @@ export default function ChatBox({ clientId, myRole }: { clientId: string; myRole
   }, [loadMessages]);
 
   useEffect(() => {
+    const interval = setInterval(loadTyping, 2500);
+    const timeout = setTimeout(loadTyping, 0);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [loadTyping]);
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+  }, [messages.length, typingUsers.length]);
+
+  function handleTextChange(value: string) {
+    setText(value);
+    // Throttle typing pings to roughly once every 2s rather than on every
+    // keystroke.
+    const now = Date.now();
+    if (now - lastTypingPingRef.current > 2000) {
+      lastTypingPingRef.current = now;
+      fetch(`/api/chat/${clientId}/typing`, { method: "POST" }).catch(() => {});
+    }
+  }
 
   async function sendMessage(fileUrl?: string, fileName?: string) {
     if (!text.trim() && !fileUrl) return;
@@ -100,13 +140,23 @@ export default function ChatBox({ clientId, myRole }: { clientId: string; myRole
     }
   }
 
+  // Only the most recent message I sent gets a Seen/Sent indicator —
+  // matches common chat UX (WhatsApp etc.) instead of marking every bubble.
+  let lastMineIndex = -1;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].senderRole === myRole) {
+      lastMineIndex = i;
+      break;
+    }
+  }
+
   return (
     <div className="flex flex-col h-[560px] bg-bg-2 border border-border rounded-xl overflow-hidden">
       <div className="flex-1 overflow-y-auto thin-scroll p-4 space-y-3">
         {messages.length === 0 && (
           <div className="text-center text-text-dim text-sm py-10">No messages yet — say hello.</div>
         )}
-        {messages.map((m) => {
+        {messages.map((m, i) => {
           if (m.senderRole === "SYSTEM") {
             return (
               <div key={m._id} className="flex justify-center">
@@ -120,6 +170,17 @@ export default function ChatBox({ clientId, myRole }: { clientId: string; myRole
 
           const mine = m.senderRole === myRole;
           const senderName = typeof m.sender === "object" && m.sender ? m.sender.name : "";
+          const readers = (m.readBy || []).map(String);
+          // Staff -> client: "Seen" means the client themselves opened it
+          // (not just another developer). Client -> staff: seen by any staff.
+          const seen =
+            i === lastMineIndex &&
+            mine &&
+            (myRole === "CLIENT"
+              ? readers.some((id) => id !== clientId)
+              : readers.includes(clientId));
+          const showStatus = i === lastMineIndex && mine;
+
           return (
             <div key={m._id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
               <div
@@ -142,13 +203,51 @@ export default function ChatBox({ clientId, myRole }: { clientId: string; myRole
                     {m.fileName || "Attachment"}
                   </a>
                 )}
-                <div className={`font-mono text-[9px] mt-1 ${mine ? "text-white/50" : "text-text-dim"}`}>
+                <div
+                  className={`flex items-center gap-1 font-mono text-[9px] mt-1 ${
+                    mine ? "text-white/50" : "text-text-dim"
+                  }`}
+                >
                   {new Date(m.createdAt).toLocaleString()}
+                  {showStatus &&
+                    (seen ? (
+                      <span className="flex items-center gap-0.5 ml-1">
+                        <FiCheckCircle size={10} /> Seen
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-0.5 ml-1">
+                        <FiCheck size={10} /> Sent
+                      </span>
+                    ))}
                 </div>
               </div>
             </div>
           );
         })}
+
+        {typingUsers.length > 0 && (
+          <div className="flex justify-start">
+            <div className="flex items-center gap-2 bg-bg-3 border border-border rounded-lg px-3.5 py-2.5 text-xs text-text-dim">
+              <span className="flex items-center gap-1">
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-text-dim"
+                  style={{ animation: "pulse-dot 1.1s ease-in-out infinite" }}
+                />
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-text-dim"
+                  style={{ animation: "pulse-dot 1.1s ease-in-out 0.15s infinite" }}
+                />
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-text-dim"
+                  style={{ animation: "pulse-dot 1.1s ease-in-out 0.3s infinite" }}
+                />
+              </span>
+              {typingUsers.map((t) => t.name).join(", ")}
+              {typingUsers.length === 1 ? " is" : " are"} typing…
+            </div>
+          </div>
+        )}
+
         <div ref={bottomRef} />
       </div>
 
@@ -171,7 +270,7 @@ export default function ChatBox({ clientId, myRole }: { clientId: string; myRole
         </button>
         <textarea
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => handleTextChange(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();

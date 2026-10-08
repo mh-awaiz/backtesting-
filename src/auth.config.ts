@@ -6,6 +6,12 @@ import type { NextAuthConfig } from "next-auth";
 export const authConfig: NextAuthConfig = {
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
+  // Vercel terminates TLS and proxies requests over plain HTTP internally
+  // (forwarding the real scheme via x-forwarded-proto). Without trustHost,
+  // Auth.js can't verify the host behind that proxy and silently fails to
+  // read back a session that's actually valid — this is what was causing
+  // "please sign in" to keep reappearing after a successful login.
+  trustHost: true,
   providers: [],
   callbacks: {
     async jwt({ token, user }) {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Sidebar from "./Sidebar";
+import PresenceHeartbeat from "./PresenceHeartbeat";
 import { FiMenu, FiCode } from "react-icons/fi";
 
 export default function DashboardShell({
@@ -16,6 +17,7 @@ export default function DashboardShell({
 
   return (
     <div className="flex min-h-screen bg-bg">
+      <PresenceHeartbeat />
       <Sidebar role={role} open={open} onClose={() => setOpen(false)} />
 
       <div className="flex-1 min-w-0">

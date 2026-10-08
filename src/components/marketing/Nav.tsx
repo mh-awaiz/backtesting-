@@ -11,9 +11,32 @@ const links = [
   { href: "/#faq", label: "FAQ" },
 ];
 
+const dashboardByRole: Record<string, string> = {
+  CLIENT: "/client/dashboard",
+  DEVELOPER: "/developer/dashboard",
+  ADMIN: "/admin/dashboard",
+};
+
 export default function Nav() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  // null = not signed in (or not checked yet) -> show "Log in" as before
+  const [dashboardHref, setDashboardHref] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/session", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled && data?.user?.role) {
+          setDashboardHref(dashboardByRole[data.user.role] ?? null);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -40,9 +63,18 @@ export default function Nav() {
               {l.label}
             </Link>
           ))}
-          <Link href="/login" className="font-mono text-sm text-text-dim hover:text-text transition-colors">
-            Log in
-          </Link>
+          {dashboardHref ? (
+            <Link
+              href={dashboardHref}
+              className="font-mono text-sm px-4 py-2 border border-border text-text hover:border-text-dim transition-colors rounded-lg"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <Link href="/login" className="font-mono text-sm text-text-dim hover:text-text transition-colors">
+              Log in
+            </Link>
+          )}
           <Link
             href="/#contact"
             className="font-mono text-sm px-4 py-2 bg-violet text-white hover:bg-violet-bright transition-colors rounded-lg"
@@ -63,9 +95,15 @@ export default function Nav() {
               {l.label}
             </Link>
           ))}
-          <Link href="/login" onClick={() => setOpen(false)} className="font-mono text-sm text-text-dim hover:text-text">
-            Log in
-          </Link>
+          {dashboardHref ? (
+            <Link href={dashboardHref} onClick={() => setOpen(false)} className="font-mono text-sm text-text hover:text-violet-bright">
+              Dashboard
+            </Link>
+          ) : (
+            <Link href="/login" onClick={() => setOpen(false)} className="font-mono text-sm text-text-dim hover:text-text">
+              Log in
+            </Link>
+          )}
           <Link
             href="/#contact"
             onClick={() => setOpen(false)}

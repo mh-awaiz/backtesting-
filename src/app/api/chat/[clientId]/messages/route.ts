@@ -33,6 +33,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const allowed = await checkAccess(clientId, session.user.id, session.user.role);
   if (!allowed) return NextResponse.json({ error: "Not found or no access." }, { status: 403 });
 
+  // Mark everything not already read by this viewer as read — this is what
+  // "Seen" on the sender's side of a conversation is based on.
+  await Message.updateMany(
+    { client: clientId, readBy: { $ne: session.user.id } },
+    { $addToSet: { readBy: session.user.id } }
+  );
+
   const messages = await Message.find({ client: clientId })
     .sort({ createdAt: 1 })
     .populate("sender", "name role")

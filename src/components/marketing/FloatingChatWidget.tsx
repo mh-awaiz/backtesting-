@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { FiMessageCircle, FiX, FiLogIn } from "react-icons/fi";
 import ChatBox from "@/components/dashboard/ChatBox";
+import PresenceHeartbeat from "@/components/dashboard/PresenceHeartbeat";
 
 type SessionState =
   | { status: "loading" }
@@ -20,10 +21,13 @@ declare global {
 export default function FloatingChatWidget() {
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState<SessionState>({ status: "loading" });
+  const [onlineDevs, setOnlineDevs] = useState<number | null>(null);
 
   const loadSession = useCallback(async () => {
     try {
-      const res = await fetch("/api/auth/session");
+      // no-store so a login that happened after this page loaded is never
+      // masked by a cached "signed out" response
+      const res = await fetch("/api/auth/session", { cache: "no-store" });
       const data = await res.json();
       if (!data?.user) {
         setSession({ status: "signed-out" });
@@ -37,30 +41,85 @@ export default function FloatingChatWidget() {
     }
   }, []);
 
+  const loadOnlineCount = useCallback(async () => {
+    try {
+      const res = await fetch("/api/developers/online-count", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setOnlineDevs(typeof data.online === "number" ? data.online : 0);
+      }
+    } catch {
+      // leave the last known count in place
+    }
+  }, []);
+
   useEffect(() => {
     const timeout = setTimeout(loadSession, 0);
     return () => clearTimeout(timeout);
   }, [loadSession]);
+
+  useEffect(() => {
+    const timeout = setTimeout(loadOnlineCount, 0);
+    const interval = setInterval(loadOnlineCount, 30_000);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
+  }, [loadOnlineCount]);
 
   // Lets any "Chat with us" button elsewhere on the page open this widget
   // without prop-drilling — see FinalCTA / indicator pages.
   useEffect(() => {
     window.__openPinexChat = () => {
       loadSession();
+      loadOnlineCount();
       setOpen(true);
     };
     return () => {
       delete window.__openPinexChat;
     };
-  }, [loadSession]);
+  }, [loadSession, loadOnlineCount]);
+
+  function toggleOpen() {
+    // Re-check the session every time the panel opens — the session loaded
+    // on mount can be stale (e.g. logged in from another tab, or the very
+    // first check raced the cookie), which is what made it keep asking to
+    // sign in after a successful login.
+    if (!open) {
+      loadSession();
+      loadOnlineCount();
+    }
+    setOpen((v) => !v);
+  }
+
+  const onlineLabel =
+    onlineDevs === null
+      ? null
+      : onlineDevs === 0
+        ? "No developers online right now"
+        : `${onlineDevs} developer${onlineDevs === 1 ? "" : "s"} online`;
 
   return (
     <>
+      {session.status === "client" && <PresenceHeartbeat />}
+
       {open && (
         <div className="fixed bottom-24 right-5 z-50 w-[calc(100vw-2.5rem)] max-w-sm max-h-[80vh] overflow-hidden">
           <div className="bg-bg-2 border border-border rounded-xl shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)] overflow-hidden max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <span className="font-display text-sm text-text">Chat with Pinex</span>
+              <div>
+                <div className="font-display text-sm text-text">Chat with Pinex</div>
+                {onlineLabel && (
+                  <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-text-dim">
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        onlineDevs && onlineDevs > 0 ? "bg-green" : "bg-text-dim"
+                      }`}
+                    />
+                    {onlineLabel}
+                  </div>
+                )}
+              </div>
               <button onClick={() => setOpen(false)} className="text-text-dim hover:text-text">
                 <FiX size={18} />
               </button>
@@ -106,11 +165,16 @@ export default function FloatingChatWidget() {
       )}
 
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggleOpen}
         className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-violet text-white flex items-center justify-center shadow-[0_14px_30px_-10px_rgba(124,111,240,0.6)] hover:bg-violet-bright transition-all duration-300 hover:-translate-y-0.5"
         aria-label={open ? "Close chat" : "Open chat"}
       >
         {open ? <FiX size={22} /> : <FiMessageCircle size={22} />}
+        {!open && onlineDevs !== null && onlineDevs > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-green text-bg text-[11px] font-semibold flex items-center justify-center border-2 border-bg">
+            {onlineDevs}
+          </span>
+        )}
       </button>
     </>
   );

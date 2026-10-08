@@ -6,8 +6,9 @@ import Project from "@/models/Project";
 import { notFound } from "next/navigation";
 import Topbar from "@/components/dashboard/Topbar";
 import ChatBox from "@/components/dashboard/ChatBox";
+import ClientInfoPanel from "@/components/dashboard/ClientInfoPanel";
 import StatusBadge from "@/components/ui/StatusBadge";
-import { FiUser, FiMail, FiFolder, FiAlertTriangle } from "react-icons/fi";
+import { FiFolder, FiAlertTriangle } from "react-icons/fi";
 
 export default async function DeveloperClientChatPage({ params }: { params: Promise<{ clientId: string }> }) {
   const { clientId } = await params;
@@ -33,17 +34,14 @@ export default async function DeveloperClientChatPage({ params }: { params: Prom
         </div>
 
         <div className="space-y-4">
-          <div className="bg-bg-2 border border-border rounded-xl p-5">
-            <div className="font-mono text-[10px] uppercase tracking-wide text-text-dim mb-3">Client</div>
-            <div className="space-y-2 text-sm text-text-dim">
-              <div className="flex items-center gap-2">
-                <FiUser size={14} /> {client.name}
-              </div>
-              <div className="flex items-center gap-2">
-                <FiMail size={14} /> {client.email}
-              </div>
-            </div>
-          </div>
+          <ClientInfoPanel
+            name={client.name}
+            email={client.email}
+            lastSeenAt={client.lastSeenAt ? client.lastSeenAt.toISOString() : null}
+            timezone={client.timezone ?? null}
+            city={client.locationCity ?? null}
+            country={client.locationCountry ?? null}
+          />
 
           <div className="bg-bg-2 border border-border rounded-xl p-5">
             <div className="font-mono text-[10px] uppercase tracking-wide text-text-dim mb-3 flex items-center gap-2">

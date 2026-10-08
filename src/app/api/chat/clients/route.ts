@@ -27,6 +27,7 @@ export async function GET() {
         name: c.name,
         email: c.email,
         company: c.company,
+        lastSeenAt: c.lastSeenAt ?? null,
         lastMessage: last
           ? { text: last.text, createdAt: last.createdAt, senderRole: last.senderRole }
           : null,

@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FiUser, FiMessageSquare } from "react-icons/fi";
 import EmptyState from "@/components/ui/EmptyState";
+import { getPresence } from "@/lib/presence";
 
 interface ClientEntry {
   _id: string;
   name: string;
   email: string;
   company?: string;
+  lastSeenAt?: string | null;
   lastMessage: { text: string; createdAt: string; senderRole: string } | null;
 }
 
@@ -35,7 +37,9 @@ export default function ChatClientList({ basePath }: { basePath: string }) {
 
   return (
     <div className="bg-bg-2 border border-border rounded-xl divide-y divide-border">
-      {clients.map((c) => (
+      {clients.map((c) => {
+        const presence = getPresence(c.lastSeenAt);
+        return (
         <Link
           key={c._id}
           href={`${basePath}/${c._id}`}
@@ -44,6 +48,10 @@ export default function ChatClientList({ basePath }: { basePath: string }) {
           <div className="min-w-0">
             <div className="font-display text-base text-text">{c.name}</div>
             <div className="text-xs text-text-dim">{c.email}</div>
+            <div className="flex items-center gap-1.5 mt-1 text-[11px] text-text-dim">
+              <span className={`w-1.5 h-1.5 rounded-full ${presence.online ? "bg-green" : "bg-text-dim/50"}`} />
+              {presence.label}
+            </div>
             {c.lastMessage ? (
               <p className="text-sm text-text-dim mt-1.5 truncate max-w-md">
                 <span className="font-mono text-[10px] uppercase text-text-dim/70 mr-1.5">
@@ -59,7 +67,8 @@ export default function ChatClientList({ basePath }: { basePath: string }) {
             <FiMessageSquare size={16} />
           </div>
         </Link>
-      ))}
+        );
+      })}
     </div>
   );
 }

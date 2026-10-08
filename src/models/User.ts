@@ -13,6 +13,10 @@ export interface IUser {
   available: boolean; // developer online/offline for chat + auto-assignment
   company?: string;
   bio?: string;
+  lastSeenAt?: Date; // passive activity presence — see PresenceHeartbeat
+  timezone?: string; // IANA zone, captured client-side on login/register
+  locationCity?: string; // from Vercel's geo headers, best-effort
+  locationCountry?: string;
   createdAt: Date;
 }
 
@@ -27,6 +31,10 @@ const UserSchema = new Schema<IUser>({
   available: { type: Boolean, default: false },
   company: { type: String, trim: true },
   bio: { type: String, trim: true },
+  lastSeenAt: { type: Date },
+  timezone: { type: String, trim: true },
+  locationCity: { type: String, trim: true },
+  locationCountry: { type: String, trim: true },
   createdAt: { type: Date, default: Date.now },
 });
 
