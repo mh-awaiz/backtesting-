@@ -47,10 +47,7 @@ function buildCandles() {
 
     const wave =
       Math.sin(t * Math.PI * 1.15) * 98 -
-      Math.max(
-        0,
-        Math.sin((t - 0.15) * Math.PI * 1.6)
-      ) * 77;
+      Math.max(0, Math.sin((t - 0.15) * Math.PI * 1.6)) * 77;
 
     const base = 266 - wave;
 
@@ -144,8 +141,7 @@ export default function ScrollChart() {
 
       const viewportHeight = window.innerHeight;
 
-      const scrollDistance =
-        section.offsetHeight - viewportHeight;
+      const scrollDistance = section.offsetHeight - viewportHeight;
 
       if (scrollDistance <= 0) {
         setProgress(1);
@@ -154,61 +150,35 @@ export default function ScrollChart() {
 
       const travelled = -rect.top;
 
-      const rawProgress =
-        travelled / scrollDistance;
+      const rawProgress = travelled / scrollDistance;
 
-      const nextProgress =
-        clamp01(rawProgress);
+      const nextProgress = clamp01(rawProgress);
 
       setProgress(nextProgress);
 
-      const centerOffset =
-        nextProgress - 0.5;
+      const centerOffset = nextProgress - 0.5;
 
-      setParallax(
-        Math.max(
-          -8,
-          Math.min(
-            8,
-            -centerOffset * 16
-          )
-        )
-      );
+      setParallax(Math.max(-8, Math.min(8, -centerOffset * 16)));
     };
 
     const handleScroll = () => {
       if (frame === null) {
-        frame = requestAnimationFrame(
-          measure
-        );
+        frame = requestAnimationFrame(measure);
       }
     };
 
     measure();
 
-    window.addEventListener(
-      "scroll",
-      handleScroll,
-      {
-        passive: true,
-      }
-    );
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
 
-    window.addEventListener(
-      "resize",
-      handleScroll
-    );
+    window.addEventListener("resize", handleScroll);
 
     return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll
-      );
+      window.removeEventListener("scroll", handleScroll);
 
-      window.removeEventListener(
-        "resize",
-        handleScroll
-      );
+      window.removeEventListener("resize", handleScroll);
 
       if (frame !== null) {
         cancelAnimationFrame(frame);
@@ -274,8 +244,7 @@ export default function ScrollChart() {
               sm:blur-[140px]
             "
             style={{
-              background:
-                "var(--violet)",
+              background: "var(--violet)",
             }}
           />
 
@@ -296,8 +265,7 @@ export default function ScrollChart() {
               sm:blur-[140px]
             "
             style={{
-              background:
-                "var(--green)",
+              background: "var(--green)",
             }}
           />
 
@@ -318,41 +286,27 @@ export default function ScrollChart() {
               sm:blur-[150px]
             "
             style={{
-              background:
-                "var(--text)",
+              background: "var(--text)",
             }}
           />
 
           {/* Grid */}
 
-          <div
-            className="
-              absolute
-              inset-0
-              opacity-[0.035]
-              sm:opacity-[0.05]
-            "
+          {/* <div
+            className="absolute inset-0 pointer-events-none"
             style={{
               backgroundImage: `
-                linear-gradient(
-                  var(--text) 1px,
-                  transparent 1px
-                ),
-                linear-gradient(
-                  90deg,
-                  var(--text) 1px,
-                  transparent 1px
-                )
-              `,
-              backgroundSize:
-                "55px 55px",
+              linear-gradient(var(--text) 1px, transparent 1px),
+              linear-gradient(90deg, var(--text) 1px, transparent 1px)
+            `,
+              backgroundSize: "80px 80px",
+              opacity: 0.05,
               maskImage:
                 "radial-gradient(circle at center, black 0%, transparent 78%)",
               WebkitMaskImage:
                 "radial-gradient(circle at center, black 0%, transparent 78%)",
             }}
-          />
-
+          /> */}
           {/* Horizon */}
 
           <div
@@ -438,10 +392,7 @@ export default function ScrollChart() {
             >
               Built for real price action,
               <br />
-
-              <span className="opacity-45">
-                not just demos.
-              </span>
+              <span className="opacity-45">not just demos.</span>
             </h2>
           </div>
 
@@ -465,8 +416,7 @@ export default function ScrollChart() {
               p-[10vh]
             "
             style={{
-              perspective:
-                "1400px",
+              perspective: "1400px",
             }}
           >
             {/* Chart glow */}
@@ -489,44 +439,6 @@ export default function ScrollChart() {
               style={{
                 background:
                   "radial-gradient(circle, var(--violet), transparent 65%)",
-              }}
-            />
-
-            {/* =================================================
-                PERSPECTIVE FLOOR
-            ================================================= */}
-
-            <div
-              className="
-                pointer-events-none
-                absolute
-                bottom-[-8%]
-                left-1/2
-                h-[30%]
-                w-full
-                -translate-x-1/2
-                rotate-x-[65deg]
-                opacity-[0.045]
-                sm:opacity-[0.07]
-              "
-              style={{
-                backgroundImage: `
-                  linear-gradient(
-                    var(--violet) 1px,
-                    transparent 1px
-                  ),
-                  linear-gradient(
-                    90deg,
-                    var(--violet) 1px,
-                    transparent 1px
-                  )
-                `,
-                backgroundSize:
-                  "40px 40px",
-                maskImage:
-                  "linear-gradient(to bottom, black, transparent)",
-                WebkitMaskImage:
-                  "linear-gradient(to bottom, black, transparent)",
               }}
             />
 
@@ -559,8 +471,7 @@ export default function ScrollChart() {
                 lg:translate-x-0
               "
               style={{
-                transform:
-                  `translateY(${parallax}px)`,
+                transform: `translateY(${parallax}px)`,
               }}
             >
               {/* =================================================
@@ -592,10 +503,7 @@ export default function ScrollChart() {
                     width="300%"
                     height="300%"
                   >
-                    <feGaussianBlur
-                      stdDeviation="5"
-                      result="blur"
-                    />
+                    <feGaussianBlur stdDeviation="5" result="blur" />
 
                     <feMerge>
                       <feMergeNode in="blur" />
@@ -612,10 +520,7 @@ export default function ScrollChart() {
                     width="300%"
                     height="300%"
                   >
-                    <feGaussianBlur
-                      stdDeviation="6"
-                      result="blur"
-                    />
+                    <feGaussianBlur stdDeviation="6" result="blur" />
 
                     <feMerge>
                       <feMergeNode in="blur" />
@@ -632,10 +537,7 @@ export default function ScrollChart() {
                     width="300%"
                     height="300%"
                   >
-                    <feGaussianBlur
-                      stdDeviation="4"
-                      result="blur"
-                    />
+                    <feGaussianBlur stdDeviation="4" result="blur" />
 
                     <feMerge>
                       <feMergeNode in="blur" />
@@ -662,13 +564,7 @@ export default function ScrollChart() {
 
                   {/* BUY gradient */}
 
-                  <linearGradient
-                    id="buyGradient"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
+                  <linearGradient id="buyGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop
                       offset="0%"
                       stopColor="var(--green)"
@@ -684,18 +580,8 @@ export default function ScrollChart() {
 
                   {/* SELL gradient */}
 
-                  <linearGradient
-                    id="sellGradient"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="0%"
-                      stopColor="var(--red)"
-                      stopOpacity="1"
-                    />
+                  <linearGradient id="sellGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--red)" stopOpacity="1" />
 
                     <stop
                       offset="100%"
@@ -737,35 +623,24 @@ export default function ScrollChart() {
                     HORIZONTAL GRID
                 ================================================= */}
 
-                {[70, 140, 210, 280, 350].map(
-                  (y) => (
-                    <line
-                      key={`h-${y}`}
-                      x1="0"
-                      y1={y}
-                      x2="1200"
-                      y2={y}
-                      stroke="var(--border)"
-                      strokeWidth="1"
-                      opacity="0.55"
-                    />
-                  )
-                )}
+                {[70, 140, 210, 280, 350].map((y) => (
+                  <line
+                    key={`h-${y}`}
+                    x1="0"
+                    y1={y}
+                    x2="1200"
+                    y2={y}
+                    stroke="var(--border)"
+                    strokeWidth="1"
+                    opacity="0.55"
+                  />
+                ))}
 
                 {/* =================================================
                     VERTICAL GRID
                 ================================================= */}
 
-                {[
-                  100,
-                  250,
-                  400,
-                  550,
-                  700,
-                  850,
-                  1000,
-                  1150,
-                ].map((x) => (
+                {[100, 250, 400, 550, 700, 850, 1000, 1150].map((x) => (
                   <line
                     key={`v-${x}`}
                     x1={x}
@@ -782,414 +657,249 @@ export default function ScrollChart() {
                     CANDLES
                 ================================================= */}
 
-                {candles.map(
-                  (candle, index) => {
-                    const threshold =
-                      index /
-                      candles.length;
+                {candles.map((candle, index) => {
+                  const threshold = index / candles.length;
 
-                    const localProgress =
-                      clamp01(
-                        (progress -
-                          threshold) *
-                          3.2
-                      );
+                  const localProgress = clamp01((progress - threshold) * 3.2);
 
-                    if (
-                      localProgress <= 0
-                    ) {
-                      return null;
-                    }
-
-                    const eased =
-                      easeOutCubic(
-                        localProgress
-                      );
-
-                    const color =
-                      candle.color ===
-                      "up"
-                        ? "var(--green)"
-                        : "var(--red)";
-
-                    const height =
-                      Math.max(
-                        2,
-                        candle.bottom -
-                          candle.top
-                      );
-
-                    const middle =
-                      candle.top +
-                      height / 2;
-
-                    return (
-                      <g
-                        key={index}
-                      >
-                        {/* Wick */}
-
-                        <line
-                          x1={candle.x}
-                          y1={
-                            candle.wickTop
-                          }
-                          x2={candle.x}
-                          y2={
-                            candle.wickBottom
-                          }
-                          stroke={color}
-                          strokeWidth="2"
-                          opacity={
-                            eased * 0.7
-                          }
-                          style={{
-                            transform:
-                              `scaleY(${eased})`,
-                            transformOrigin:
-                              `${candle.x}px ${middle}px`,
-                          }}
-                        />
-
-                        {/* Candle glow */}
-
-                        <rect
-                          x={
-                            candle.x - 5
-                          }
-                          y={
-                            candle.top
-                          }
-                          width="10"
-                          height={height}
-                          rx="2"
-                          fill={color}
-                          opacity={
-                            eased * 0.18
-                          }
-                          filter={
-                            candle.color ===
-                            "up"
-                              ? "url(#greenGlow)"
-                              : "url(#redGlow)"
-                          }
-                        />
-
-                        {/* Candle body */}
-
-                        <rect
-                          x={
-                            candle.x - 4
-                          }
-                          y={
-                            candle.top
-                          }
-                          width="8"
-                          height={height}
-                          rx="1.5"
-                          fill={color}
-                          opacity={eased}
-                          style={{
-                            transform:
-                              `scaleY(${eased})`,
-                            transformOrigin:
-                              `${candle.x}px ${middle}px`,
-                          }}
-                        />
-                      </g>
-                    );
+                  if (localProgress <= 0) {
+                    return null;
                   }
-                )}
+
+                  const eased = easeOutCubic(localProgress);
+
+                  const color =
+                    candle.color === "up" ? "var(--green)" : "var(--red)";
+
+                  const height = Math.max(2, candle.bottom - candle.top);
+
+                  const middle = candle.top + height / 2;
+
+                  return (
+                    <g key={index}>
+                      {/* Wick */}
+
+                      <line
+                        x1={candle.x}
+                        y1={candle.wickTop}
+                        x2={candle.x}
+                        y2={candle.wickBottom}
+                        stroke={color}
+                        strokeWidth="2"
+                        opacity={eased * 0.7}
+                        style={{
+                          transform: `scaleY(${eased})`,
+                          transformOrigin: `${candle.x}px ${middle}px`,
+                        }}
+                      />
+
+                      {/* Candle glow */}
+
+                      <rect
+                        x={candle.x - 5}
+                        y={candle.top}
+                        width="10"
+                        height={height}
+                        rx="2"
+                        fill={color}
+                        opacity={eased * 0.18}
+                        filter={
+                          candle.color === "up"
+                            ? "url(#greenGlow)"
+                            : "url(#redGlow)"
+                        }
+                      />
+
+                      {/* Candle body */}
+
+                      <rect
+                        x={candle.x - 4}
+                        y={candle.top}
+                        width="8"
+                        height={height}
+                        rx="1.5"
+                        fill={color}
+                        opacity={eased}
+                        style={{
+                          transform: `scaleY(${eased})`,
+                          transformOrigin: `${candle.x}px ${middle}px`,
+                        }}
+                      />
+                    </g>
+                  );
+                })}
 
                 {/* =================================================
                     BUY / SELL SIGNALS
                 ================================================= */}
 
-                {SIGNALS.map(
-                  (
-                    signal,
-                    signalIndex
-                  ) => {
-                    const candle =
-                      candles[
-                        signal.index
-                      ];
+                {SIGNALS.map((signal, signalIndex) => {
+                  const candle = candles[signal.index];
 
-                    if (!candle)
-                      return null;
+                  if (!candle) return null;
 
-                    const threshold =
-                      signal.index /
-                      candles.length;
+                  const threshold = signal.index / candles.length;
 
-                    const signalProgress =
-                      clamp01(
-                        (progress -
-                          threshold) *
-                          4
-                      );
+                  const signalProgress = clamp01((progress - threshold) * 4);
 
-                    if (
-                      signalProgress <=
-                      0
-                    ) {
-                      return null;
-                    }
+                  if (signalProgress <= 0) {
+                    return null;
+                  }
 
-                    const easedSignal =
-                      easeOutCubic(
-                        signalProgress
-                      );
+                  const easedSignal = easeOutCubic(signalProgress);
 
-                    const isBuy =
-                      signal.type ===
-                      "BUY";
+                  const isBuy = signal.type === "BUY";
 
-                    const signalY =
-                      isBuy
-                        ? Math.min(
-                            390,
-                            candle.wickBottom +
-                              32
-                          )
-                        : Math.max(
-                            30,
-                            candle.wickTop -
-                              32
-                          );
+                  const signalY = isBuy
+                    ? Math.min(390, candle.wickBottom + 32)
+                    : Math.max(30, candle.wickTop - 32);
 
-                    const offset =
-                      signalIndex %
-                        2 ===
-                      0
-                        ? -2
-                        : 2;
+                  const offset = signalIndex % 2 === 0 ? -2 : 2;
 
-                    const y =
-                      signalY + offset;
+                  const y = signalY + offset;
 
-                    const boxWidth =
-                      76;
+                  const boxWidth = 76;
 
-                    const boxHeight =
-                      31;
+                  const boxHeight = 31;
 
-                    const boxX =
-                      candle.x -
-                      boxWidth / 2;
+                  const boxX = candle.x - boxWidth / 2;
 
-                    const translateY =
-                      isBuy
-                        ? (1 -
-                            easedSignal) *
-                          14
-                        : -(
-                            (1 -
-                              easedSignal) *
-                            14
-                          );
+                  const translateY = isBuy
+                    ? (1 - easedSignal) * 14
+                    : -((1 - easedSignal) * 14);
 
-                    return (
-                      <g
-                        key={`${signal.type}-${signal.index}`}
-                        style={{
-                          opacity:
-                            easedSignal,
+                  return (
+                    <g
+                      key={`${signal.type}-${signal.index}`}
+                      style={{
+                        opacity: easedSignal,
 
-                          transform: `
+                        transform: `
                             translateY(${translateY}px)
                             scale(${0.82 + easedSignal * 0.18})
                           `,
 
-                          transformOrigin:
-                            `${candle.x}px ${y}px`,
-                        }}
-                      >
-                        {/* Connector */}
+                        transformOrigin: `${candle.x}px ${y}px`,
+                      }}
+                    >
+                      {/* Connector */}
 
-                        <line
-                          x1={candle.x}
-                          y1={
-                            isBuy
-                              ? candle.wickBottom
-                              : candle.wickTop
-                          }
-                          x2={candle.x}
-                          y2={
-                            isBuy
-                              ? y -
-                                boxHeight /
-                                  2
-                              : y +
-                                boxHeight /
-                                  2
-                          }
-                          stroke={
-                            isBuy
-                              ? "var(--green)"
-                              : "var(--red)"
-                          }
-                          strokeWidth="1"
-                          strokeDasharray="3 4"
-                          opacity="0.65"
-                        />
+                      <line
+                        x1={candle.x}
+                        y1={isBuy ? candle.wickBottom : candle.wickTop}
+                        x2={candle.x}
+                        y2={isBuy ? y - boxHeight / 2 : y + boxHeight / 2}
+                        stroke={isBuy ? "var(--green)" : "var(--red)"}
+                        strokeWidth="1"
+                        strokeDasharray="3 4"
+                        opacity="0.65"
+                      />
 
-                        {/* Signal glow */}
+                      {/* Signal glow */}
 
-                        <rect
-                          x={
-                            boxX - 4
-                          }
-                          y={
-                            y -
-                            boxHeight /
-                              2 -
-                            4
-                          }
-                          width={
-                            boxWidth + 8
-                          }
-                          height={
-                            boxHeight + 8
-                          }
-                          rx="9"
-                          fill={
-                            isBuy
-                              ? "var(--green)"
-                              : "var(--red)"
-                          }
-                          opacity="0.12"
-                          filter="url(#signalGlow)"
-                        />
+                      <rect
+                        x={boxX - 4}
+                        y={y - boxHeight / 2 - 4}
+                        width={boxWidth + 8}
+                        height={boxHeight + 8}
+                        rx="9"
+                        fill={isBuy ? "var(--green)" : "var(--red)"}
+                        opacity="0.12"
+                        filter="url(#signalGlow)"
+                      />
 
-                        {/* Signal box */}
+                      {/* Signal box */}
 
-                        <rect
-                          x={boxX}
-                          y={
-                            y -
-                            boxHeight /
-                              2
-                          }
-                          width={
-                            boxWidth
-                          }
-                          height={
-                            boxHeight
-                          }
-                          rx="7"
-                          fill={
-                            isBuy
-                              ? "url(#buyGradient)"
-                              : "url(#sellGradient)"
-                          }
-                          fillOpacity="0.9"
-                          stroke={
-                            isBuy
-                              ? "var(--green)"
-                              : "var(--red)"
-                          }
-                          strokeOpacity="0.7"
-                          strokeWidth="1"
-                          filter="url(#signalShadow)"
-                        />
+                      <rect
+                        x={boxX}
+                        y={y - boxHeight / 2}
+                        width={boxWidth}
+                        height={boxHeight}
+                        rx="7"
+                        fill={
+                          isBuy ? "url(#buyGradient)" : "url(#sellGradient)"
+                        }
+                        fillOpacity="0.9"
+                        stroke={isBuy ? "var(--green)" : "var(--red)"}
+                        strokeOpacity="0.7"
+                        strokeWidth="1"
+                        filter="url(#signalShadow)"
+                      />
 
-                        {/* Highlight */}
+                      {/* Highlight */}
 
-                        <rect
-                          x={
-                            boxX + 1
-                          }
-                          y={
-                            y -
-                            boxHeight /
-                              2 +
-                            1
-                          }
-                          width={
-                            boxWidth - 2
-                          }
-                          height="9"
-                          rx="6"
-                          fill="white"
-                          opacity="0.08"
-                        />
+                      <rect
+                        x={boxX + 1}
+                        y={y - boxHeight / 2 + 1}
+                        width={boxWidth - 2}
+                        height="9"
+                        rx="6"
+                        fill="white"
+                        opacity="0.08"
+                      />
 
-                        {/* BUY arrow */}
+                      {/* BUY arrow */}
 
-                        {isBuy ? (
-                          <path
-                            d={`
+                      {isBuy ? (
+                        <path
+                          d={`
                               M ${candle.x - 24} ${y + 5}
                               L ${candle.x - 18} ${y - 3}
                               L ${candle.x - 12} ${y + 5}
                             `}
-                            fill="none"
-                            stroke="white"
-                            strokeWidth="1.7"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            opacity="0.9"
-                          />
-                        ) : (
-                          <path
-                            d={`
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="1.7"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          opacity="0.9"
+                        />
+                      ) : (
+                        <path
+                          d={`
                               M ${candle.x - 24} ${y - 5}
                               L ${candle.x - 18} ${y + 3}
                               L ${candle.x - 12} ${y - 5}
                             `}
-                            fill="none"
-                            stroke="white"
-                            strokeWidth="1.7"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            opacity="0.9"
-                          />
-                        )}
-
-                        {/* Text */}
-
-                        <text
-                          x={
-                            candle.x + 7
-                          }
-                          y={y + 4}
-                          textAnchor="middle"
-                          fill="white"
-                          fontSize="11"
-                          fontWeight="700"
-                          fontFamily="monospace"
-                          letterSpacing="1"
-                        >
-                          {signal.type}
-                        </text>
-
-                        {/* Status dot */}
-
-                        <circle
-                          cx={
-                            boxX +
-                            boxWidth -
-                            9
-                          }
-                          cy={
-                            y -
-                            boxHeight /
-                              2 +
-                            9
-                          }
-                          r="2"
-                          fill="white"
-                          opacity="0.8"
-                          style={{
-                            filter:
-                              "drop-shadow(0 0 4px white)",
-                          }}
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="1.7"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          opacity="0.9"
                         />
-                      </g>
-                    );
-                  }
-                )}
+                      )}
+
+                      {/* Text */}
+
+                      <text
+                        x={candle.x + 7}
+                        y={y + 4}
+                        textAnchor="middle"
+                        fill="white"
+                        fontSize="11"
+                        fontWeight="700"
+                        fontFamily="monospace"
+                        letterSpacing="1"
+                      >
+                        {signal.type}
+                      </text>
+
+                      {/* Status dot */}
+
+                      <circle
+                        cx={boxX + boxWidth - 9}
+                        cy={y - boxHeight / 2 + 9}
+                        r="2"
+                        fill="white"
+                        opacity="0.8"
+                        style={{
+                          filter: "drop-shadow(0 0 4px white)",
+                        }}
+                      />
+                    </g>
+                  );
+                })}
 
                 {/* =================================================
                     TREND GLOW
@@ -1205,10 +915,8 @@ export default function ScrollChart() {
                   pathLength={1}
                   style={{
                     strokeDasharray: 1,
-                    strokeDashoffset:
-                      1 - progress,
-                    filter:
-                      "blur(7px)",
+                    strokeDashoffset: 1 - progress,
+                    filter: "blur(7px)",
                   }}
                 />
 
@@ -1225,8 +933,7 @@ export default function ScrollChart() {
                   pathLength={1}
                   style={{
                     strokeDasharray: 1,
-                    strokeDashoffset:
-                      1 - progress,
+                    strokeDashoffset: 1 - progress,
                   }}
                 />
 
@@ -1241,8 +948,7 @@ export default function ScrollChart() {
                   fill="var(--violet)"
                   opacity={progress}
                   style={{
-                    filter:
-                      "drop-shadow(0 0 10px var(--violet))",
+                    filter: "drop-shadow(0 0 10px var(--violet))",
                   }}
                 />
 
@@ -1253,9 +959,7 @@ export default function ScrollChart() {
                   fill="none"
                   stroke="var(--violet)"
                   strokeWidth="1"
-                  opacity={
-                    progress * 0.35
-                  }
+                  opacity={progress * 0.35}
                 />
               </svg>
 
@@ -1345,11 +1049,9 @@ export default function ScrollChart() {
             sm:w-3
           "
           style={{
-            background:
-              "var(--violet)",
+            background: "var(--violet)",
 
-            boxShadow:
-              "0 0 20px 6px var(--violet)",
+            boxShadow: "0 0 20px 6px var(--violet)",
           }}
         />
 
@@ -1367,11 +1069,9 @@ export default function ScrollChart() {
             sm:w-2
           "
           style={{
-            background:
-              "var(--green)",
+            background: "var(--green)",
 
-            boxShadow:
-              "0 0 20px 6px var(--green)",
+            boxShadow: "0 0 20px 6px var(--green)",
           }}
         />
 
