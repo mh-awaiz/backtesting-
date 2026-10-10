@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FiCode, FiAlertCircle } from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc";
 import Button from "@/components/ui/Button";
 
 export default function RegisterPage() {
@@ -129,6 +130,21 @@ export default function RegisterPage() {
               {loading ? "Creating account…" : "Create account"}
             </Button>
           </form>
+
+          <div className="flex items-center gap-3 my-5">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-text-dim">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => signIn("google", { callbackUrl: "/client/dashboard" })}
+            className="w-full flex items-center justify-center gap-2.5 bg-bg-3 border border-border hover:border-violet rounded-lg px-3 py-2.5 text-sm text-text transition-colors"
+          >
+            <FcGoogle size={18} />
+            Continue with Google
+          </button>
 
           <p className="text-center text-sm text-text-dim mt-5">
             Already have an account?{" "}
